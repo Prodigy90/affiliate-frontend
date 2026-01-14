@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { AUTH_COOKIE_PREFIX } from "./auth-constants";
 
 // Validate required environment variables at startup
 if (!process.env.BETTER_AUTH_SECRET) {
@@ -59,6 +60,11 @@ export const auth = betterAuth({
       enabled: true,
       maxAge: 60 * 5 // 5 minutes
     }
+  },
+
+  // Use unique cookie prefix to avoid conflicts with other apps on localhost
+  advanced: {
+    cookiePrefix: AUTH_COOKIE_PREFIX
   },
 
   // User configuration with affiliate-specific fields

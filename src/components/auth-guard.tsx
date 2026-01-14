@@ -1,12 +1,22 @@
 "use client";
 
 import { useSession, signIn } from "@/lib/auth-client";
+import { DEFAULT_LOGIN_REDIRECT } from "@/lib/auth-constants";
 
 type AuthGuardProps = {
   children: React.ReactNode;
   requireAdmin?: boolean;
 };
 
+/**
+ * Client-side authentication guard
+ *
+ * Note: Primary route protection is handled by middleware.ts (server-side).
+ * This component provides:
+ * - Loading states while session is being verified
+ * - Role-based access control (admin vs affiliate)
+ * - Fallback UI for edge cases (e.g., session expiry during navigation)
+ */
 export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
   const { data: session, isPending } = useSession();
   const user = session?.user;
@@ -21,6 +31,8 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
     );
   }
 
+  // Fallback for edge cases where middleware didn't catch unauthenticated access
+  // (e.g., session expired during client-side navigation)
   if (!user) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
@@ -31,7 +43,7 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
           onClick={() =>
             signIn.social({
               provider: "google",
-              callbackURL: window.location.pathname
+              callbackURL: DEFAULT_LOGIN_REDIRECT
             })
           }
           className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
