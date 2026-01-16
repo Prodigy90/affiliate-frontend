@@ -14,7 +14,8 @@ import type {
   ProductDetail,
   ProductListResponse,
   UpdateCommissionConfigRequest,
-  UpdateCommissionConfigResponse
+  UpdateCommissionConfigResponse,
+  UpdateProductRequest
 } from "@/lib/types/product";
 
 // Note: authToken parameters are kept for backwards compatibility but ignored
@@ -182,6 +183,17 @@ export async function createProduct(
 ): Promise<CreateProductResponse> {
   return apiPost<CreateProductRequest, CreateProductResponse>(
     "/admin/products",
+    payload
+  );
+}
+
+export async function updateProduct(
+  id: string,
+  payload: UpdateProductRequest,
+  _authToken?: string
+): Promise<ProductDetail> {
+  return apiPut<UpdateProductRequest, ProductDetail>(
+    `/admin/products/${id}`,
     payload
   );
 }

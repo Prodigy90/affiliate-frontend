@@ -39,8 +39,19 @@ export type CreateProductRequest = {
   name: string;
   description: string;
   base_url: string;
+  signup_path?: string;
   base_commission_rate: number;
   max_commission_payments?: number | null;
+};
+
+export type UpdateProductRequest = {
+  name: string;
+  description: string;
+  base_url: string;
+  signup_path?: string;
+  base_commission_rate: number;
+  max_commission_payments?: number | null;
+  status?: string;
 };
 
 export type CreateProductResponse = ProductDetail & {

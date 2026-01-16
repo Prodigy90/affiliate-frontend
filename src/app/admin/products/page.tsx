@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Copy, Check, Key } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { createProduct, getProducts } from "@/lib/api/admin";
@@ -25,15 +26,18 @@ const productSchema = z.object({
 		.string()
 		.min(1, "Base URL is required")
 		.url("Enter a valid URL, e.g. https://product.com"),
+	signup_path: z
+		.string()
+		.regex(/^\/.*$/, "Must start with / (e.g. /signup)")
+		.optional()
+		.or(z.literal("")),
 	base_commission_rate: z.coerce
 		.number({ message: "Enter a base commission rate" })
 		.min(0, "Rate must be at least 0"),
-	max_commission_payments: z.coerce
-		.number({ message: "Enter max commission payments" })
-		.int("Must be a whole number")
-		.min(1, "Must be at least 1")
-		.optional()
-		.nullable(),
+	max_commission_payments: z.preprocess(
+		(val) => (val === "" || val === undefined || val === null || (typeof val === "number" && Number.isNaN(val)) ? undefined : Number(val)),
+		z.number().int("Must be a whole number").min(1, "Must be at least 1").optional().nullable()
+	),
 	unlimited_commissions: z.boolean().optional(),
 });
 
@@ -47,6 +51,29 @@ export default function AdminProductsPage() {
   const [lastCreatedKey, setLastCreatedKey] = useState<
     { productId: string; apiKey: string } | null
   >(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyApiKey = useCallback(async () => {
+    if (!lastCreatedKey?.apiKey) return;
+
+    try {
+      await navigator.clipboard.writeText(lastCreatedKey.apiKey);
+      setCopied(true);
+      toast.success("API key copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = lastCreatedKey.apiKey;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopied(true);
+      toast.success("API key copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [lastCreatedKey?.apiKey]);
 
   const {
     data,
@@ -206,19 +233,36 @@ export default function AdminProductsPage() {
               )}
             </div>
 
-            <div className="space-y-1 text-xs text-slate-200">
-              <label className="block">Base URL</label>
-              <input
-                type="url"
-                placeholder="https://wasbot.ng"
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                {...register("base_url")}
-              />
-              {errors.base_url && (
-                <p className="pt-1 text-[11px] text-red-400">
-                  {errors.base_url.message}
-                </p>
-              )}
+            <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
+              <div className="space-y-1 text-xs text-slate-200">
+                <label className="block">Base URL</label>
+                <input
+                  type="url"
+                  placeholder="https://wasbot.ng"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  {...register("base_url")}
+                />
+                {errors.base_url && (
+                  <p className="pt-1 text-[11px] text-red-400">
+                    {errors.base_url.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1 text-xs text-slate-200">
+                <label className="block">Signup path</label>
+                <input
+                  type="text"
+                  placeholder="/signup"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  {...register("signup_path")}
+                />
+                {errors.signup_path && (
+                  <p className="pt-1 text-[11px] text-red-400">
+                    {errors.signup_path.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
@@ -240,7 +284,10 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="space-y-1 text-xs text-slate-200">
-                <label className="block">Max commission payments</label>
+                <label className="block">Max payments per referral</label>
+                <p className="text-[10px] text-slate-500">
+                  Limit commissions earned per referred user
+                </p>
                 <div className="mt-1 space-y-2">
                   <label className="flex items-center gap-2">
                     <input
@@ -248,7 +295,7 @@ export default function AdminProductsPage() {
                       {...register("unlimited_commissions")}
                       className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500"
                     />
-                    <span className="text-xs text-slate-300">Unlimited (lifetime commissions)</span>
+                    <span className="text-xs text-slate-300">Unlimited per referral</span>
                   </label>
                   {!watchUnlimited && (
                     <input
@@ -257,7 +304,7 @@ export default function AdminProductsPage() {
                       step={1}
                       placeholder="2"
                       className="w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                      {...register("max_commission_payments", { valueAsNumber: true })}
+                      {...register("max_commission_payments")}
                     />
                   )}
                 </div>
@@ -280,13 +327,42 @@ export default function AdminProductsPage() {
             </button>
 
             {lastCreatedKey && (
-              <p className="pt-2 text-[11px] text-emerald-200">
-                API key for <span className="font-semibold">{lastCreatedKey.productId}</span>:
-                <span className="ml-1 rounded bg-slate-900 px-1.5 py-0.5 font-mono">
-                  {lastCreatedKey.apiKey}
-                </span>
-                . Store this in the product&apos;s environment as <code>REFERRAL_API_KEY</code>.
-              </p>
+              <div className="mt-4 space-y-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-400">
+                  <Key className="h-3.5 w-3.5" />
+                  <span>API Key for {lastCreatedKey.productId}</span>
+                </div>
+                <div className="relative">
+                  <div className="flex items-center gap-2 rounded-md border border-slate-700 bg-slate-950/80 p-2.5">
+                    <code className="flex-1 overflow-x-auto font-mono text-xs text-slate-200 scrollbar-none">
+                      {lastCreatedKey.apiKey}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={handleCopyApiKey}
+                      className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors ${
+                        copied
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                      }`}
+                      aria-label="Copy API key"
+                    >
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500">
+                  Store this in the product&apos;s environment as{" "}
+                  <code className="rounded bg-slate-800 px-1 py-0.5 text-slate-300">
+                    AFFILIATE_API_KEY
+                  </code>
+                  . This key is shown only once.
+                </p>
+              </div>
             )}
           </form>
         </div>
@@ -312,7 +388,7 @@ export default function AdminProductsPage() {
                   <tr>
                     <th className="px-2 py-2">Product</th>
                     <th className="px-2 py-2">Base rate</th>
-                    <th className="px-2 py-2">Max payments</th>
+                    <th className="px-2 py-2">Max / referral</th>
                     <th className="px-2 py-2">Status</th>
                     <th className="px-2 py-2 text-right">Details</th>
                   </tr>
