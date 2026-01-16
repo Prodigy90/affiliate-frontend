@@ -1,12 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "@/lib/auth-client";
 import { Loader2, LogIn, LogOut } from "lucide-react";
 
 export function UserMenu() {
+  const [mounted, setMounted] = useState(false);
   const { data: session, isPending } = useSession();
 
-  if (isPending) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show loading state until client is mounted (prevents hydration mismatch)
+  if (!mounted || isPending) {
     return (
       <div className="flex items-center gap-2 text-xs text-slate-400">
         <Loader2 className="h-3 w-3 animate-spin" />
