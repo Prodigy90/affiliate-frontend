@@ -14,6 +14,7 @@ import { getBanks, resolveBankAccount, type Bank } from "@/lib/api/banks";
 import { format } from "date-fns";
 import { useEffect, useState, useCallback } from "react";
 import { useAuthSession } from "@/components/auth-guard";
+import { BankSelect } from "@/components/bank-select";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -313,27 +314,17 @@ export default function AffiliateSettingsPage() {
         <form onSubmit={bankDetailsForm.handleSubmit(onBankDetailsSubmit)} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label htmlFor="bank_code" className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1 block text-sm font-medium text-slate-300">
                 Bank Name
               </label>
-              <select
-                id="bank_code"
-                {...bankDetailsForm.register("bank_code")}
+              <BankSelect
+                banks={banks || []}
+                value={watchedBankCode}
+                onChange={(code) => bankDetailsForm.setValue("bank_code", code, { shouldDirty: true })}
                 disabled={banksLoading}
-                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">{banksLoading ? "Loading banks..." : "Select a bank"}</option>
-                {banks?.map((bank, index) => (
-                  <option key={`${bank.code}-${index}`} value={bank.code}>
-                    {bank.name}
-                  </option>
-                ))}
-              </select>
-              {bankDetailsForm.formState.errors.bank_code && (
-                <p className="mt-1 text-xs text-red-400">
-                  {bankDetailsForm.formState.errors.bank_code.message}
-                </p>
-              )}
+                placeholder={banksLoading ? "Loading banks..." : "Search and select a bank"}
+                error={bankDetailsForm.formState.errors.bank_code?.message}
+              />
             </div>
 
             <div>
