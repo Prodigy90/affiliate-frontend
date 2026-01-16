@@ -1,16 +1,24 @@
 import { format } from "date-fns";
 
+/**
+ * Format a monetary amount for display.
+ * @param amount - The amount in the smallest currency unit (e.g., kobo for NGN, cents for USD)
+ * @param currency - The currency code (e.g., "NGN", "USD")
+ * @returns Formatted currency string (e.g., "₦4,000.00")
+ */
 export function formatCurrency(amount: number, currency?: string) {
 	const code = currency || "USD";
+	// Convert from smallest unit (kobo/cents) to main unit (naira/dollars)
+	const mainUnitAmount = amount / 100;
 	try {
 		return new Intl.NumberFormat(undefined, {
 			style: "currency",
 			currency: code,
 			maximumFractionDigits: 2,
-		}).format(amount);
+		}).format(mainUnitAmount);
 	} catch {
 		// Fallback if an invalid currency code is passed.
-		return `${code} ${amount.toLocaleString()}`;
+		return `${code} ${mainUnitAmount.toLocaleString()}`;
 	}
 }
 
