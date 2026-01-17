@@ -96,6 +96,11 @@ export function BankSelect({
         setSearch("");
         setHighlightedIndex(-1);
       }
+    } else if (e.key === "Tab" && isOpen) {
+      // Close dropdown when tabbing away
+      setIsOpen(false);
+      setSearch("");
+      setHighlightedIndex(-1);
     }
   }
 

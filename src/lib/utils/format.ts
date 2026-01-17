@@ -8,12 +8,10 @@ import { format } from "date-fns";
  */
 export function formatCurrency(amount: number, currency?: string) {
 	const code = currency || "USD";
-	// Guard against invalid input
-	if (typeof amount !== "number" || isNaN(amount)) {
-		return `${code} 0.00`;
-	}
+	// Guard against invalid input - normalize to 0
+	const safeAmount = typeof amount !== "number" || isNaN(amount) ? 0 : amount;
 	// Convert from smallest unit (kobo/cents) to main unit (naira/dollars)
-	const mainUnitAmount = amount / 100;
+	const mainUnitAmount = safeAmount / 100;
 	try {
 		return new Intl.NumberFormat(undefined, {
 			style: "currency",
