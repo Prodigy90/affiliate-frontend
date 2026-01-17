@@ -171,7 +171,6 @@ export default function AdminProductDetailPage({ params }: PageProps) {
   });
 
   async function onSubmitProduct(values: ProductFormValues) {
-    console.log("onSubmitProduct called with values:", values);
     if (!backendToken) {
       toast.error("Please sign in as admin to update product.");
       return;
@@ -180,7 +179,6 @@ export default function AdminProductDetailPage({ params }: PageProps) {
   }
 
   function onProductFormError(errors: typeof productErrors) {
-    console.log("Form validation errors:", errors);
     const fieldNames: Record<string, string> = {
       name: "Name",
       description: "Description",

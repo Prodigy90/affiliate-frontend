@@ -11,6 +11,7 @@ interface BankSelectProps {
   disabled?: boolean;
   placeholder?: string;
   error?: string;
+  id?: string;
 }
 
 export function BankSelect({
@@ -20,11 +21,14 @@ export function BankSelect({
   disabled = false,
   placeholder = "Select a bank",
   error,
+  id,
 }: BankSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const selectedBank = banks.find((b) => b.code === value);
 
@@ -32,12 +36,18 @@ export function BankSelect({
     bank.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Reset highlighted index when filtered banks change
+  useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [search]);
+
   // Close on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setSearch("");
+        setHighlightedIndex(-1);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -51,21 +61,58 @@ export function BankSelect({
     }
   }, [isOpen]);
 
+  // Scroll highlighted item into view
+  useEffect(() => {
+    if (highlightedIndex >= 0 && listRef.current) {
+      const item = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`);
+      item?.scrollIntoView({ block: "nearest" });
+    }
+  }, [highlightedIndex]);
+
   // Handle keyboard navigation
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Escape") {
       setIsOpen(false);
       setSearch("");
+      setHighlightedIndex(-1);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!isOpen) {
+        setIsOpen(true);
+      } else {
+        setHighlightedIndex((prev) =>
+          prev < filteredBanks.length - 1 ? prev + 1 : prev
+        );
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === "Enter" && isOpen && highlightedIndex >= 0) {
+      e.preventDefault();
+      const bank = filteredBanks[highlightedIndex];
+      if (bank) {
+        onChange(bank.code);
+        setIsOpen(false);
+        setSearch("");
+        setHighlightedIndex(-1);
+      }
     }
   }
+
+  const listboxId = id ? `${id}-listbox` : "bank-select-listbox";
 
   return (
     <div ref={containerRef} className="relative" onKeyDown={handleKeyDown}>
       {/* Trigger Button */}
       <button
         type="button"
+        id={id}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
+        aria-invalid={!!error}
         className={`
           w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-all
           ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-slate-600"}
@@ -104,7 +151,13 @@ export function BankSelect({
           </div>
 
           {/* Bank List */}
-          <div className="max-h-64 overflow-y-auto overscroll-contain">
+          <div
+            ref={listRef}
+            id={listboxId}
+            role="listbox"
+            aria-label="Banks"
+            className="max-h-64 overflow-y-auto overscroll-contain"
+          >
             {filteredBanks.length === 0 ? (
               <div className="px-3 py-6 text-center text-sm text-slate-400">
                 No banks found for &quot;{search}&quot;
@@ -113,19 +166,26 @@ export function BankSelect({
               <div className="p-1">
                 {filteredBanks.map((bank, index) => {
                   const isSelected = bank.code === value;
+                  const isHighlighted = index === highlightedIndex;
                   return (
                     <button
                       key={`${bank.code}-${index}`}
                       type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      data-index={index}
                       onClick={() => {
                         onChange(bank.code);
                         setIsOpen(false);
                         setSearch("");
+                        setHighlightedIndex(-1);
                       }}
                       className={`
                         w-full flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors
                         ${isSelected
                           ? "bg-emerald-500/10 text-emerald-400"
+                          : isHighlighted
+                          ? "bg-slate-800 text-slate-100"
                           : "text-slate-200 hover:bg-slate-800"
                         }
                       `}
