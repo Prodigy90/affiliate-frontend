@@ -2,12 +2,13 @@ import { useSession } from "@/lib/auth-client";
 
 export function useAffiliate() {
   const { data: session, isPending } = useSession();
+  const isAuthenticated = !!session?.user;
 
   return {
     affiliate: session?.user,
-    // backendToken no longer needed - proxy handles auth via cookies
-    backendToken: undefined,
+    // backendToken kept for backward compatibility - proxy handles auth via cookies
+    backendToken: isAuthenticated ? "proxy-handles-auth" : undefined,
     isLoading: isPending,
-    isAuthenticated: !!session?.user
+    isAuthenticated
   };
 }
