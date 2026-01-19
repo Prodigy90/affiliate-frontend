@@ -34,7 +34,7 @@ type BankDetailsFormValues = z.infer<typeof bankDetailsSchema>;
 
 export default function AffiliateSettingsPage() {
   const queryClient = useQueryClient();
-  const { backendToken, status } = useAuthSession();
+  const { isAuthenticated, status } = useAuthSession();
 
   // State for bank account resolution
   const [isResolving, setIsResolving] = useState(false);
@@ -46,8 +46,8 @@ export default function AffiliateSettingsPage() {
     isLoading: profileLoading,
   } = useQuery<AffiliateProfile, Error>({
     queryKey: ["settings-profile"],
-    queryFn: () => getProfile(backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getProfile(),
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -132,7 +132,7 @@ export default function AffiliateSettingsPage() {
 
   // Profile update mutation
   const profileMutation = useMutation({
-    mutationFn: (input: UpdateProfileInput) => updateProfile(input, backendToken!),
+    mutationFn: (input: UpdateProfileInput) => updateProfile(input),
     onSuccess: () => {
       toast.success("Profile updated successfully");
       queryClient.invalidateQueries({ queryKey: ["settings-profile"] });
@@ -145,7 +145,7 @@ export default function AffiliateSettingsPage() {
 
   // Bank details update mutation
   const bankDetailsMutation = useMutation({
-    mutationFn: (input: UpdateBankDetailsInput) => updateBankDetails(input, backendToken!),
+    mutationFn: (input: UpdateBankDetailsInput) => updateBankDetails(input),
     onSuccess: () => {
       toast.success("Bank details updated successfully");
       queryClient.invalidateQueries({ queryKey: ["settings-profile"] });
@@ -156,7 +156,7 @@ export default function AffiliateSettingsPage() {
   });
 
   async function onProfileSubmit(values: ProfileFormValues) {
-    if (!backendToken) {
+    if (!isAuthenticated) {
       toast.error("Please sign in to update your profile.");
       return;
     }
@@ -164,7 +164,7 @@ export default function AffiliateSettingsPage() {
   }
 
   async function onBankDetailsSubmit(values: BankDetailsFormValues) {
-    if (!backendToken) {
+    if (!isAuthenticated) {
       toast.error("Please sign in to update bank details.");
       return;
     }
@@ -179,7 +179,7 @@ export default function AffiliateSettingsPage() {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">

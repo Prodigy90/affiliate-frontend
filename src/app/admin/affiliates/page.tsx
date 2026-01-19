@@ -14,15 +14,15 @@ import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
 
 export default function AdminAffiliatesPage() {
-  const { backendToken, role, status } = useAuthSession();
+  const { isAuthenticated, role, status } = useAuthSession();
 
   const { data, isLoading, isError, refetch } = useQuery<
     AdminAffiliateListResponse,
     Error
   >({
     queryKey: ["admin-affiliates"],
-    queryFn: () => getAdminAffiliates({ page: 1, limit: 20 }, backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getAdminAffiliates({ page: 1, limit: 20 }),
+    enabled: isAuthenticated,
     staleTime: 30_000
   });
 
@@ -37,7 +37,7 @@ export default function AdminAffiliatesPage() {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">

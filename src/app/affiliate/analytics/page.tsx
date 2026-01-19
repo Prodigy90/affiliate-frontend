@@ -24,7 +24,7 @@ import {
 import { LOTTIE_ANALYTICS } from "@/lib/constants/lottie";
 
 export default function AnalyticsPage() {
-  const { backendToken } = useAffiliate();
+  const { isAuthenticated } = useAffiliate();
 
   // Date range state (default to last 30 days)
   const [dateRange, setDateRange] = useState(() => {
@@ -49,12 +49,12 @@ export default function AnalyticsPage() {
   } = useQuery({
     queryKey: ["analytics", "earnings-trend", dateRange, granularity],
     queryFn: () =>
-      getEarningsTrend(backendToken!, {
+      getEarningsTrend({
         from_date: dateRange.from,
         to_date: dateRange.to,
         granularity,
       }),
-    enabled: !!backendToken,
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -66,11 +66,11 @@ export default function AnalyticsPage() {
   } = useQuery({
     queryKey: ["analytics", "product-performance", dateRange],
     queryFn: () =>
-      getProductPerformance(backendToken!, {
+      getProductPerformance({
         from_date: dateRange.from,
         to_date: dateRange.to,
       }),
-    enabled: !!backendToken,
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -82,11 +82,11 @@ export default function AnalyticsPage() {
   } = useQuery({
     queryKey: ["analytics", "conversion-metrics", dateRange],
     queryFn: () =>
-      getConversionMetrics(backendToken!, {
+      getConversionMetrics({
         from_date: dateRange.from,
         to_date: dateRange.to,
       }),
-    enabled: !!backendToken,
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 

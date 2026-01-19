@@ -25,7 +25,7 @@ import { PageSkeleton } from "@/components/page-skeleton";
 
 export default function AdminAffiliateDetailPage({ params }: PageProps) {
   const { id } = use(params);
-  const { backendToken, role, status } = useAuthSession();
+  const { isAuthenticated, role, status } = useAuthSession();
 
   const {
     data: earnings,
@@ -34,8 +34,8 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
     refetch: refetchEarnings
   } = useQuery<EarningsSummary, Error>({
     queryKey: ["admin-affiliate-earnings", id],
-    queryFn: () => getAdminAffiliateEarnings(id, backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getAdminAffiliateEarnings(id),
+    enabled: isAuthenticated,
     staleTime: 30_000
   });
 
@@ -47,15 +47,11 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   } = useQuery<CommissionListResponse, Error>({
     queryKey: ["admin-affiliate-commissions", id, { page: 1, limit: 20 }],
     queryFn: () =>
-      getAdminAffiliateCommissions(
-        id,
-        {
-          page: 1,
-          limit: 20
-        },
-        backendToken!
-      ),
-    enabled: !!backendToken,
+      getAdminAffiliateCommissions(id, {
+        page: 1,
+        limit: 20
+      }),
+    enabled: isAuthenticated,
     staleTime: 30_000
   });
 
@@ -70,7 +66,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">

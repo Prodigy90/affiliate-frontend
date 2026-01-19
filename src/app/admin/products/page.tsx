@@ -46,7 +46,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
-  const { backendToken, role, status } = useAuthSession();
+  const { isAuthenticated, role, status } = useAuthSession();
 
   const [lastCreatedKey, setLastCreatedKey] = useState<
     { productId: string; apiKey: string } | null
@@ -82,8 +82,8 @@ export default function AdminProductsPage() {
     refetch,
   } = useQuery<ProductListResponse, Error>({
     queryKey: ["admin-products"],
-    queryFn: () => getProducts(backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getProducts(),
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -101,8 +101,7 @@ export default function AdminProductsPage() {
 	});
 
   const createMutation = useMutation({
-    mutationFn: (values: ProductFormValues) =>
-      createProduct(values, backendToken!),
+    mutationFn: (values: ProductFormValues) => createProduct(values),
     onSuccess: async (created) => {
       toast.success(`Product ${created.name} created.`);
       setLastCreatedKey({ productId: created.product_id, apiKey: created.api_key });
@@ -117,7 +116,7 @@ export default function AdminProductsPage() {
   const products = data?.products ?? [];
 
   async function onSubmit(values: ProductFormValues) {
-    if (!backendToken) {
+    if (!isAuthenticated) {
       toast.error("Please sign in as admin to create products.");
       return;
     }
@@ -143,7 +142,7 @@ export default function AdminProductsPage() {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">

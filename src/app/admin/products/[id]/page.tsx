@@ -68,7 +68,7 @@ type CommissionFormValues = z.infer<typeof commissionSchema>;
 
 export default function AdminProductDetailPage({ params }: PageProps) {
   const { id } = use(params);
-  const { backendToken, role, status } = useAuthSession();
+  const { isAuthenticated, role, status } = useAuthSession();
   const queryClient = useQueryClient();
 
   const {
@@ -78,8 +78,8 @@ export default function AdminProductDetailPage({ params }: PageProps) {
     refetch,
   } = useQuery<ProductDetail, Error>({
     queryKey: ["admin-product", id],
-    queryFn: () => getProductById(id, backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getProductById(id),
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -158,7 +158,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
         max_commission_payments: values.unlimited_commissions ? null : values.max_commission_payments,
         status: values.status,
       };
-      return updateProduct(id, payload, backendToken!);
+      return updateProduct(id, payload);
     },
     onSuccess: async () => {
       toast.success("Product updated.");
@@ -171,7 +171,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
   });
 
   async function onSubmitProduct(values: ProductFormValues) {
-    if (!backendToken) {
+    if (!isAuthenticated) {
       toast.error("Please sign in as admin to update product.");
       return;
     }
@@ -195,13 +195,13 @@ export default function AdminProductDetailPage({ params }: PageProps) {
   }
 
   async function onSubmitCommission(values: CommissionFormValues) {
-    if (!backendToken) {
+    if (!isAuthenticated) {
       toast.error("Please sign in as admin to update commission config.");
       return;
     }
 
     try {
-      await updateProductCommissionConfig(id, values, backendToken);
+      await updateProductCommissionConfig(id, values);
       toast.success("Commission config updated.");
       await refetch();
     } catch (error) {
@@ -218,7 +218,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">

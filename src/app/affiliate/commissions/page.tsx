@@ -14,15 +14,15 @@ import { useAuthSession } from "@/components/auth-guard";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 
 export default function AffiliateCommissionsPage() {
-	  const { backendToken, status } = useAuthSession();
+	  const { isAuthenticated, status } = useAuthSession();
 
 	  const { data, isLoading, isError, refetch } = useQuery<
 	    CommissionListResponse,
 	    Error
 	  >({
 	    queryKey: ["commissions", { page: 1, limit: 20 }],
-	    queryFn: () => getCommissions(backendToken!),
-	    enabled: !!backendToken,
+	    queryFn: () => getCommissions(),
+	    enabled: isAuthenticated,
 	    staleTime: 30_000,
 	    // As with earnings, don't keep retrying on hard failures; it just
 	    // makes the page feel slow.
@@ -40,7 +40,7 @@ export default function AffiliateCommissionsPage() {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">

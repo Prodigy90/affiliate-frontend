@@ -19,7 +19,7 @@ import { useAuthSession } from "@/components/auth-guard";
 
 export default function AffiliateProductsPage() {
   const queryClient = useQueryClient();
-  const { backendToken, status } = useAuthSession();
+  const { isAuthenticated, status } = useAuthSession();
 
 	const {
 		data: productsData,
@@ -27,8 +27,8 @@ export default function AffiliateProductsPage() {
 		isError: productsError,
 	} = useQuery<AffiliateProductsResponse, Error>({
 		queryKey: ["affiliate-products"],
-		queryFn: () => getAffiliateProducts(backendToken!),
-		enabled: !!backendToken,
+		queryFn: () => getAffiliateProducts(),
+		enabled: isAuthenticated,
 		staleTime: 30_000,
 		retry: 0,
 	});
@@ -39,14 +39,14 @@ export default function AffiliateProductsPage() {
 		isError: linksError,
 	} = useQuery<ReferralLinksListResponse, Error>({
 		queryKey: ["referral-links", { page: 1, limit: 50 }],
-		queryFn: () => getReferralLinks(backendToken!, { page: 1, limit: 50 }),
-		enabled: !!backendToken,
+		queryFn: () => getReferralLinks({ page: 1, limit: 50 }),
+		enabled: isAuthenticated,
 		staleTime: 30_000,
 		retry: 0,
 	});
 
 	const enrollMutation = useMutation({
-		mutationFn: (productId: string) => enrollInProduct(productId, backendToken!),
+		mutationFn: (productId: string) => enrollInProduct(productId),
 		onSuccess: async () => {
 			toast.success("You are now enrolled in this product.");
 			await queryClient.invalidateQueries({ queryKey: ["affiliate-products"] });
@@ -68,7 +68,7 @@ export default function AffiliateProductsPage() {
 		);
 	}
 
-	if (!backendToken) {
+	if (!isAuthenticated) {
 		return (
 			<div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
 				<p className="text-sm text-slate-300">
