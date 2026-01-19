@@ -20,20 +20,20 @@ import { RetryButton } from "@/components/retry-button";
 
 export default function AdminPayoutsPage() {
 	  const queryClient = useQueryClient();
-	  const { backendToken, role, status } = useAuthSession();
+	  const { isAuthenticated, role, status } = useAuthSession();
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery<
     AdminPayoutListResponse,
     Error
   >({
     queryKey: ["admin-payouts"],
-    queryFn: () => getAdminPayouts({ page: 1, limit: 20 }, backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getAdminPayouts({ page: 1, limit: 20 }),
+    enabled: isAuthenticated,
     staleTime: 30_000
   });
 
   const approveMutation = useMutation({
-    mutationFn: (id: string) => approvePayout(id, backendToken!),
+    mutationFn: (id: string) => approvePayout(id),
     onSuccess: () => {
       toast.success("Payout marked as completed.");
       queryClient.invalidateQueries({ queryKey: ["admin-payouts"] });
@@ -44,7 +44,7 @@ export default function AdminPayoutsPage() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => rejectPayout(id, backendToken!),
+    mutationFn: (id: string) => rejectPayout(id),
     onSuccess: () => {
       toast.success("Payout rejected.");
       queryClient.invalidateQueries({ queryKey: ["admin-payouts"] });
@@ -65,7 +65,7 @@ export default function AdminPayoutsPage() {
     );
   }
 
-  if (!backendToken) {
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <p className="text-sm text-slate-300">
@@ -138,10 +138,10 @@ export default function AdminPayoutsPage() {
                   <tr key={payout.id} className="align-middle">
                     <td className="px-2 py-2">
                       <p className="text-xs font-medium text-slate-100">
-                        {shortenId(payout.affiliate_id)}
+                        {payout.affiliate_name || shortenId(payout.affiliate_id)}
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        {payout.affiliate_id}
+                        {payout.affiliate_name ? shortenId(payout.affiliate_id) : payout.affiliate_id}
                       </p>
                     </td>
                     <td className="px-2 py-2">
