@@ -17,10 +17,12 @@ import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 
+const MIN_PAYOUT_NGN = 5000; // Minimum payout in naira
+
 const payoutSchema = z.object({
 	amount: z.coerce
 		.number({ message: "Enter a payout amount" })
-		.min(1, "Amount must be at least 1"),
+		.min(MIN_PAYOUT_NGN, `Minimum payout is ₦${MIN_PAYOUT_NGN.toLocaleString()}`),
 });
 
 type PayoutFormInput = z.input<typeof payoutSchema>;
@@ -28,7 +30,7 @@ type PayoutFormValues = z.infer<typeof payoutSchema>;
 
 export default function AffiliatePayoutsPage() {
   const queryClient = useQueryClient();
-  const { backendToken, isLoading: authLoading, isAuthenticated } = useAffiliate();
+  const { isLoading: authLoading, isAuthenticated } = useAffiliate();
 
   const {
     data: earnings,
@@ -40,8 +42,8 @@ export default function AffiliatePayoutsPage() {
     isLoading: payoutsLoading,
   } = useQuery<Payout[], Error>({
     queryKey: ["payouts"],
-    queryFn: () => getPayouts(backendToken!),
-    enabled: !!backendToken,
+    queryFn: () => getPayouts(),
+    enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -54,11 +56,13 @@ export default function AffiliatePayoutsPage() {
 		resolver: zodResolver(payoutSchema),
 	});
 
-  const available = earnings?.available_for_payout ?? 0;
+  // API returns amounts in kobo (smallest unit), convert to naira for display
+  const availableKobo = earnings?.available_for_payout ?? 0;
+  const availableNaira = availableKobo / 100;
   const currency = earnings?.currency ?? "NGN";
 
   async function onSubmit(values: PayoutFormValues) {
-    if (!backendToken) {
+    if (!isAuthenticated) {
       toast.error("Please sign in to request a payout.");
       return;
     }
@@ -68,16 +72,19 @@ export default function AffiliatePayoutsPage() {
       return;
     }
 
-    if (values.amount > available) {
+    // User enters naira, compare with available naira
+    if (values.amount > availableNaira) {
       toast.error("Requested amount exceeds your available balance.");
       return;
     }
 
     try {
-      const res = await requestPayout(values.amount, backendToken);
+      // Convert naira to kobo for API (backend stores amounts in kobo)
+      const amountInKobo = values.amount * 100;
+      const res = await requestPayout(amountInKobo);
       toast.success(
         `Payout requested for ${formatCurrency(
-          res.amount ?? values.amount,
+          res.amount ?? amountInKobo,
           currency,
         )}.`,
       );
@@ -138,19 +145,19 @@ export default function AffiliatePayoutsPage() {
             Available for payout
           </p>
           <p className="text-xl font-semibold text-slate-50">
-            {earningsLoading ? "Loading..." : formatCurrency(available, currency)}
+            {earningsLoading ? "Loading..." : formatCurrency(availableKobo, currency)}
           </p>
           <form
             className="space-y-3 pt-2"
             onSubmit={handleSubmit(onSubmit)}
           >
             <label className="space-y-1 text-xs text-slate-200">
-              <span>Request amount</span>
+              <span>Request amount (₦)</span>
               <input
                 type="number"
                 step="1"
-                min={1}
-                placeholder="Enter amount"
+                min={MIN_PAYOUT_NGN}
+                placeholder={`Min ₦${MIN_PAYOUT_NGN.toLocaleString()}`}
                 className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 {...register("amount", { valueAsNumber: true })}
               />
@@ -162,14 +169,16 @@ export default function AffiliatePayoutsPage() {
             </label>
             <button
               type="submit"
-              disabled={isSubmitting || available <= 0}
+              disabled={isSubmitting || availableNaira < MIN_PAYOUT_NGN}
               className="inline-flex h-9 items-center justify-center rounded-full bg-emerald-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
             >
               {isSubmitting ? "Requesting..." : "Request payout"}
             </button>
-            {available <= 0 && !earningsLoading && (
+            {availableNaira < MIN_PAYOUT_NGN && !earningsLoading && (
               <p className="pt-1 text-[11px] text-slate-400">
-                You currently have no available balance for payout.
+                {availableNaira <= 0
+                  ? "You currently have no available balance for payout."
+                  : `Minimum payout is ₦${MIN_PAYOUT_NGN.toLocaleString()}. Your available balance is below this.`}
               </p>
             )}
           </form>
