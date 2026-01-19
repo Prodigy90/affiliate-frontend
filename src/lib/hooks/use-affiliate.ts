@@ -6,8 +6,6 @@ export function useAffiliate() {
 
   return {
     affiliate: session?.user,
-    // backendToken kept for backward compatibility - proxy handles auth via cookies
-    backendToken: isAuthenticated ? "proxy-handles-auth" : undefined,
     isLoading: isPending,
     isAuthenticated
   };
