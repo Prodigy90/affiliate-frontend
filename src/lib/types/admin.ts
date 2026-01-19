@@ -1,6 +1,7 @@
 export type AdminPayout = {
   id: string;
   affiliate_id: string;
+  affiliate_name: string;
   amount: number;
   currency: string;
   status: string;
