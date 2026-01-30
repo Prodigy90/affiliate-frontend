@@ -208,7 +208,7 @@ export default function AdminProductsPage() {
               <label className="block">Name</label>
               <input
                 type="text"
-                placeholder="WasBot - WhatsApp Automation"
+                placeholder="WASBOT - WhatsApp Automation"
                 className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 {...register("name")}
               />

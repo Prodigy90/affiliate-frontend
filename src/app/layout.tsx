@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "WasBot Affiliate",
-	description: "Affiliate dashboard and admin console for WasBot referrals.",
+	title: "WASBOT Affiliate",
+	description: "Affiliate dashboard and admin console for WASBOT referrals.",
 };
 
 export default function RootLayout({

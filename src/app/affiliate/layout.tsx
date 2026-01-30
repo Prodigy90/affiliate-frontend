@@ -23,7 +23,7 @@ export default function AffiliateLayout({ children }: AffiliateLayoutProps) {
 					<div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
 					<Link href="/affiliate/dashboard" className="flex items-center gap-2">
 						<span className="rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold uppercase tracking-tight text-emerald-400">
-							WasBot
+							WASBOT
 						</span>
 						<span className="text-sm font-medium text-slate-100">
 							Affiliate

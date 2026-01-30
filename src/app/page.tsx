@@ -44,9 +44,9 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50">
       <main className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/60 p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold tracking-tight">WasBot Affiliate</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">WASBOT Affiliate</h1>
         <p className="mt-2 text-sm text-slate-300">
-          Unified referral dashboard and admin console for WasBot. Sign in with Google to
+          Unified referral dashboard and admin console for WASBOT. Sign in with Google to
           access your affiliate earnings or manage payouts and products.
         </p>
 

@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link href="/admin/payouts" className="flex items-center gap-2">
             <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold uppercase tracking-tight text-emerald-400">
-              WasBot
+              WASBOT
             </span>
             <span className="text-sm font-medium text-slate-100">Admin</span>
           </Link>
