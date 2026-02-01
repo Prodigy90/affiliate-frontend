@@ -38,8 +38,14 @@ export const auth = betterAuth({
     ssl: sslConfig
   }),
 
-  // Base URL for auth callbacks
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  // Base URL for auth callbacks - required in production
+  baseURL: (() => {
+    const url = process.env.BETTER_AUTH_URL;
+    if (!url && process.env.NODE_ENV === 'production') {
+      throw new Error('BETTER_AUTH_URL environment variable is required in production');
+    }
+    return url || 'http://localhost:3000';
+  })(),
 
   // Secret for session encryption
   secret: process.env.BETTER_AUTH_SECRET,
@@ -93,8 +99,11 @@ export const auth = betterAuth({
         // Use 'after' hook but sync is idempotent - if it fails, proxy will handle it
         after: async (user) => {
           // Sync new user to Go backend after creation
-          const baseUrl =
-            process.env.BETTER_AUTH_URL || "http://localhost:3000";
+          const baseUrl = process.env.BETTER_AUTH_URL;
+          if (!baseUrl) {
+            console.error("[Auth] BETTER_AUTH_URL not configured, skipping user sync");
+            return;
+          }
 
           try {
             const response = await fetch(`${baseUrl}/api/auth/sync-user`, {
