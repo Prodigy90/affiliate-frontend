@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 
-const BACKEND_URL =
-  process.env.INTERNAL_API_URL || "http://localhost:8080/api/v1";
+// Require INTERNAL_API_URL in production
+const BACKEND_URL = process.env.INTERNAL_API_URL;
+
+if (!BACKEND_URL && process.env.NODE_ENV === 'production') {
+  throw new Error('INTERNAL_API_URL environment variable is required in production');
+}
+
+// Default to localhost for development only
+const getBackendUrl = () => BACKEND_URL || 'http://localhost:8080/api/v1';
 
 /**
  * API Route: /api/auth/sync-user
@@ -22,12 +29,12 @@ export async function POST(request: Request) {
     }
 
     // Call backend to create affiliate record
-    const response = await fetch(`${BACKEND_URL}/auth/signup-external`, {
+    const response = await fetch(`${getBackendUrl()}/auth/signup-external`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Internal API key for server-to-server auth
-        "X-Internal-API-Key": process.env.INTERNAL_API_KEY || "dev-internal-key"
+        // Internal API key for server-to-server auth - required in all environments
+        "X-Internal-API-Key": process.env.INTERNAL_API_KEY || ""
       },
       body: JSON.stringify({
         user_id, // Better Auth user ID

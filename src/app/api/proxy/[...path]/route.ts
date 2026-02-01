@@ -3,8 +3,15 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import * as jose from "jose";
 
-const BACKEND_URL =
-  process.env.INTERNAL_API_URL || "http://localhost:8080/api/v1";
+// Require INTERNAL_API_URL in production
+const BACKEND_URL = process.env.INTERNAL_API_URL;
+
+if (!BACKEND_URL && process.env.NODE_ENV === 'production') {
+  throw new Error('INTERNAL_API_URL environment variable is required in production');
+}
+
+// Default to localhost for development only
+const getBackendUrl = () => BACKEND_URL || 'http://localhost:8080/api/v1';
 
 // Cache affiliate info by email to avoid repeated lookups
 // Limited to 1000 entries to prevent unbounded growth
@@ -77,11 +84,11 @@ async function getOrCreateAffiliate(
   try {
     // Call the backend to get/create affiliate by email
     // This endpoint is idempotent - it returns existing affiliate or creates new
-    const response = await fetch(`${BACKEND_URL}/auth/signup-external`, {
+    const response = await fetch(`${getBackendUrl()}/auth/signup-external`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Internal-API-Key": apiKey || "dev-internal-key"
+        "X-Internal-API-Key": apiKey || ""
       },
       body: JSON.stringify({
         user_id: "proxy-lookup",
@@ -91,11 +98,8 @@ async function getOrCreateAffiliate(
     });
 
     if (!response.ok) {
-      console.error(
-        "[Proxy] Failed to get affiliate:",
-        response.status,
-        await response.text()
-      );
+      // Log status only - avoid logging response body which may contain sensitive data
+      console.error("[Proxy] Failed to get affiliate, status:", response.status);
       return null;
     }
 
@@ -244,9 +248,10 @@ async function proxyRequest(
   const token = await getJWTToken(reqHeaders);
 
   // Build the backend URL with validated query string
+  const backendBaseUrl = getBackendUrl();
   const url = new URL(request.url);
   const queryString = validateQueryString(url.search);
-  const backendUrl = `${BACKEND_URL}/${validPath}${queryString}`;
+  const backendUrl = `${backendBaseUrl}/${validPath}${queryString}`;
 
   // Prepare headers for backend request
   const backendHeaders: HeadersInit = {
@@ -287,7 +292,8 @@ async function proxyRequest(
       }
     });
   } catch (error) {
-    console.error("[Proxy] Request failed:", error);
+    // Log error without exposing sensitive details like URLs or request data
+    console.error("[Proxy] Request failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Proxy error", message: "Failed to connect to backend" },
       { status: 502 }
