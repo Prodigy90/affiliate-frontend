@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
-// Require INTERNAL_API_URL in production
-const BACKEND_URL = process.env.INTERNAL_API_URL;
-
-if (!BACKEND_URL && process.env.NODE_ENV === 'production') {
-  throw new Error('INTERNAL_API_URL environment variable is required in production');
-}
-
-// Default to localhost for development only
-const getBackendUrl = () => BACKEND_URL || 'http://localhost:8080/api/v1';
+// Default to localhost for development, require INTERNAL_API_URL at runtime in production
+// Note: Validation is done at runtime (not module load) to allow building without env vars
+const getBackendUrl = () => {
+  const url = process.env.INTERNAL_API_URL;
+  if (!url && process.env.NODE_ENV === 'production') {
+    throw new Error('INTERNAL_API_URL environment variable is required in production');
+  }
+  return url || 'http://localhost:8080/api/v1';
+};
 
 /**
  * API Route: /api/auth/sync-user
