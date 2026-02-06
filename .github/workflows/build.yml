@@ -55,8 +55,7 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ vars.AFFILIATE_API_URL }}
+          # No build-time env vars needed - uses API proxy pattern at runtime
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
