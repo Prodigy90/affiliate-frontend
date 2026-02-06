@@ -21,11 +21,9 @@ export default function AffiliateLayout({ children }: AffiliateLayoutProps) {
 		<div className="min-h-screen bg-slate-950 text-slate-50">
 			<header className="border-b border-slate-800/80">
 					<div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-					<Link href="/affiliate/dashboard" className="flex items-center gap-2">
-						<span className="rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold uppercase tracking-tight text-emerald-400">
-							WASBOT
-						</span>
-						<span className="text-sm font-medium text-slate-100">
+					<Link href="/affiliate/dashboard" className="group flex items-center gap-2">
+						<img src="/wasbot-icon.svg" alt="WASBOT" className="h-7 w-7 rounded-md transition-shadow duration-300 group-hover:shadow-[0_0_12px_rgba(45,212,191,0.5)]" />
+						<span className="text-sm font-semibold text-slate-100">
 							Affiliate
 						</span>
 					</Link>

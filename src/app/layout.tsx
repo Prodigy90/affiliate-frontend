@@ -16,6 +16,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "WASBOT Affiliate",
 	description: "Affiliate dashboard and admin console for WASBOT referrals.",
+	manifest: "/site.webmanifest",
+	icons: {
+		icon: "/wasbot-icon.svg",
+		apple: "/apple-icon.png",
+	},
+	openGraph: {
+		title: "WASBOT Affiliate",
+		description: "Affiliate dashboard and admin console for WASBOT referrals.",
+		type: "website",
+	},
 };
 
 export default function RootLayout({
