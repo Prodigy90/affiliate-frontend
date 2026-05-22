@@ -25,7 +25,7 @@ export function AmbassadorTeaser() {
             </h2>
 
             <p className="mx-auto mb-6 max-w-2xl text-base leading-relaxed text-slate-400 md:text-lg">
-              Once you cross ₦100,000 in commissions, you unlock the ambassador tier — bigger
+              Once you cross ₦100,000 in commissions, the ambassador tier opens — bigger
               cuts, longer payout windows, and a direct line to the founder for support
               requests, custom collateral, and early access to features.
             </p>
