@@ -3,7 +3,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { Banknote, UserPlus, Zap, type LucideIcon } from "lucide-react";
 
-import { useReferralEvents } from "@/hooks/useReferralEvents";
+import { useReferralEvents } from "@/lib/hooks/use-referral-events";
 
 import type { ReferralEvent, ReferralEventType } from "./types";
 
@@ -134,7 +134,7 @@ function EventRow({ event }: { event: ReferralEvent }) {
       <div
         className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ${style.iconBg} ${style.iconText} ${style.ring}`}
       >
-        <Icon className="h-4.5 w-4.5" aria-hidden="true" />
+        <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm text-slate-100">{eventTitle(event)}</p>
