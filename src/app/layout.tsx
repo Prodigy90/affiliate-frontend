@@ -14,16 +14,18 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-	title: "WASBOT Affiliate",
-	description: "Affiliate dashboard and admin console for WASBOT referrals.",
+	title: "WASBOT Affiliate — Earn 10% on Every Renewal, Three Months Running",
+	description:
+		"Share what you already love about WASBOT. Get paid 10% on every renewal for the first three months — every single referral, no cap.",
 	manifest: "/site.webmanifest",
 	icons: {
 		icon: "/wasbot-icon.svg",
 		apple: "/apple-icon.png",
 	},
 	openGraph: {
-		title: "WASBOT Affiliate",
-		description: "Affiliate dashboard and admin console for WASBOT referrals.",
+		title: "WASBOT Affiliate — Earn 10% on Every Renewal",
+		description:
+			"Share what you already love about WASBOT. Get paid 10% on every renewal for the first three months — no cap on referrals.",
 		type: "website",
 	},
 };
