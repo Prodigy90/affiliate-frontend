@@ -121,7 +121,7 @@ export function BankSelect({
         className={`
           w-full flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-all
           ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-slate-600"}
-          ${isOpen ? "border-emerald-500 ring-1 ring-emerald-500" : "border-slate-700"}
+          ${isOpen ? "border-teal-500 ring-1 ring-teal-500" : "border-slate-700"}
           ${error ? "border-red-500" : ""}
           bg-slate-800/80
         `}
@@ -150,7 +150,7 @@ export function BankSelect({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search banks..."
-                className="w-full rounded-md border border-slate-700 bg-slate-800 pl-8 pr-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-md border border-slate-700 bg-slate-800 pl-8 pr-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export function BankSelect({
                       className={`
                         w-full flex items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors
                         ${isSelected
-                          ? "bg-emerald-500/10 text-emerald-400"
+                          ? "bg-teal-500/10 text-teal-400"
                           : isHighlighted
                           ? "bg-slate-800 text-slate-100"
                           : "text-slate-200 hover:bg-slate-800"

@@ -13,7 +13,7 @@ export function StatusBadge({ status, variant = "commission" }: StatusBadgeProps
       status === "credited" ||
       status === "completed"
     ) {
-      return "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/40";
+      return "bg-teal-500/10 text-teal-300 ring-1 ring-teal-500/40";
     }
 
     // Yellow for pending/processing states
