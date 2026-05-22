@@ -1,26 +1,132 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* WASBOT brand: dark theme by default, teal primary */
+:root {
+  --radius: 0.625rem;
+  /* Dark theme (WASBOT primary) */
+  --background: #020617; /* slate-950 */
+  --foreground: #f8fafc; /* slate-50 */
+  --card: rgba(15, 23, 42, 0.6); /* slate-900/60 */
+  --card-foreground: #f8fafc; /* slate-50 */
+  --popover: #0f172a; /* slate-900 */
+  --popover-foreground: #f8fafc; /* slate-50 */
+  --primary: #14b8a6; /* teal-500 - WASBOT brand */
+  --primary-foreground: #020617; /* slate-950 */
+  --secondary: #1e293b; /* slate-800 */
+  --secondary-foreground: #f8fafc; /* slate-50 */
+  --muted: #1e293b; /* slate-800 */
+  --muted-foreground: #94a3b8; /* slate-400 */
+  --accent: rgba(20, 184, 166, 0.1); /* teal-500/10 */
+  --accent-foreground: #2dd4bf; /* teal-400 */
+  --destructive: #f43f5e; /* rose-500 */
+  --destructive-foreground: #fff;
+  --border: rgba(30, 41, 59, 0.7); /* slate-800/70 */
+  --input: rgba(30, 41, 59, 0.7); /* slate-800/70 */
+  --ring: #14b8a6; /* teal-500 */
+  /* Chart colors */
+  --chart-1: #14b8a6; /* teal-500 */
+  --chart-2: #3b82f6; /* blue-500 */
+  --chart-3: #f59e0b; /* amber-500 */
+  --chart-4: #8b5cf6; /* violet-500 */
+  --chart-5: #f43f5e; /* rose-500 */
+  /* Sidebar */
+  --sidebar: #0f172a; /* slate-900 */
+  --sidebar-foreground: #f8fafc; /* slate-50 */
+  --sidebar-primary: #14b8a6; /* teal-500 */
+  --sidebar-primary-foreground: #020617; /* slate-950 */
+  --sidebar-accent: rgba(20, 184, 166, 0.1); /* teal-500/10 */
+  --sidebar-accent-foreground: #2dd4bf; /* teal-400 */
+  --sidebar-border: rgba(30, 41, 59, 0.7); /* slate-800/70 */
+  --sidebar-ring: #14b8a6; /* teal-500 */
+}
+
+.dark {
+  /* Dark mode mirrors :root since WASBOT defaults to dark. The .dark class is
+     kept so shadcn components that rely on `dark:` variants behave correctly. */
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: rgba(15, 23, 42, 0.6);
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #14b8a6;
+  --primary-foreground: #020617;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: rgba(20, 184, 166, 0.1);
+  --accent-foreground: #2dd4bf;
+  --destructive: #f43f5e;
+  --destructive-foreground: #fff;
+  --border: rgba(30, 41, 59, 0.7);
+  --input: rgba(30, 41, 59, 0.7);
+  --ring: #14b8a6;
+  --chart-1: #14b8a6;
+  --chart-2: #3b82f6;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #f43f5e;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #14b8a6;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: rgba(20, 184, 166, 0.1);
+  --sidebar-accent-foreground: #2dd4bf;
+  --sidebar-border: rgba(30, 41, 59, 0.7);
+  --sidebar-ring: #14b8a6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
 }
