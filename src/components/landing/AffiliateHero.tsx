@@ -47,7 +47,7 @@ export function AffiliateHero({ onPrimaryCta }: AffiliateHeroProps) {
         aria-hidden="true"
       >
         <div className="absolute left-1/2 top-0 h-[480px] w-[800px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-teal-500/10 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[320px] w-[480px] translate-y-1/3 rounded-full bg-emerald-500/5 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-[320px] w-[480px] translate-y-1/3 rounded-full bg-teal-500/5 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

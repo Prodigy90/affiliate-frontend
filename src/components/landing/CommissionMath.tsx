@@ -103,8 +103,8 @@ export function CommissionMath() {
 
         {/* Footnote */}
         <p className="mt-8 text-center text-xs text-slate-500 md:text-sm">
-          Paid out monthly to your bank, dollar accounts also supported. Currency-matched to
-          whatever plan your referral picks up.
+          Paid out monthly to your Nigerian bank or dollar account. Plan pricing stays NGN — the
+          payout currency is your choice.
         </p>
       </div>
     </section>
