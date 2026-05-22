@@ -226,7 +226,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
         </p>
         <button
           onClick={() => signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
         >
           <span>Sign in</span>
         </button>
@@ -267,7 +267,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       <section className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
           Admin · Product
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
@@ -289,7 +289,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
               <label className="block">Name</label>
               <input
                 type="text"
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...registerProduct("name")}
               />
               {productErrors.name && (
@@ -301,7 +301,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
               <label className="block">Description</label>
               <textarea
                 rows={2}
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...registerProduct("description")}
               />
               {productErrors.description && (
@@ -314,7 +314,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                 <label className="block">Base URL</label>
                 <input
                   type="url"
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerProduct("base_url")}
                 />
                 {productErrors.base_url && (
@@ -327,7 +327,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                 <input
                   type="text"
                   placeholder="/signup"
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerProduct("signup_path")}
                 />
                 {productErrors.signup_path && (
@@ -343,7 +343,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                   type="number"
                   step="0.1"
                   min={0}
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerProduct("base_commission_rate", { valueAsNumber: true })}
                 />
                 {productErrors.base_commission_rate && (
@@ -358,7 +358,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                     <input
                       type="checkbox"
                       {...registerProduct("unlimited_commissions")}
-                      className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-teal-500 focus:ring-teal-500"
                     />
                     <span className="text-xs text-slate-300">Unlimited</span>
                   </label>
@@ -367,7 +367,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                       type="number"
                       min={1}
                       step={1}
-                      className="w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                      className="w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                       {...registerProduct("max_commission_payments", { valueAsNumber: true })}
                     />
                   )}
@@ -381,7 +381,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
             <div className="space-y-1 text-xs text-slate-200">
               <label className="block">Status</label>
               <select
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...registerProduct("status")}
               >
                 <option value="active">Active</option>
@@ -400,7 +400,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
             <button
               type="submit"
               disabled={isSubmittingProduct || updateProductMutation.isPending}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-emerald-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-teal-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
             >
               {isSubmittingProduct || updateProductMutation.isPending ? "Saving..." : "Save product details"}
             </button>
@@ -419,7 +419,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                   type="number"
                   step="0.1"
                   min={0}
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerCommission("default_rate", { valueAsNumber: true })}
                 />
                 {commissionErrors.default_rate && (
@@ -434,7 +434,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                   type="number"
                   min={1}
                   step={1}
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerCommission("max_payments", { valueAsNumber: true })}
                 />
                 {commissionErrors.max_payments && (
@@ -452,7 +452,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                   type="number"
                   step="0.1"
                   min={0}
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerCommission("recurring_rate", { valueAsNumber: true })}
                 />
                 {commissionErrors.recurring_rate && (
@@ -467,7 +467,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                   type="number"
                   step="0.1"
                   min={0}
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerCommission("one_time_rate", { valueAsNumber: true })}
                 />
                 {commissionErrors.one_time_rate && (
@@ -482,7 +482,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
                   type="number"
                   step="0.01"
                   min={0}
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...registerCommission("min_payout_amount", { valueAsNumber: true })}
                 />
                 {commissionErrors.min_payout_amount && (
@@ -496,7 +496,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
             <label className="inline-flex items-center gap-2 text-xs text-slate-200">
               <input
                 type="checkbox"
-                className="h-3.5 w-3.5 rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-0"
+                className="h-3.5 w-3.5 rounded border-slate-600 bg-slate-900 text-teal-500 focus:ring-0"
                 {...registerCommission("lifetime_commission_enabled")}
               />
               <span>Enable lifetime commissions for this product</span>
@@ -505,7 +505,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
             <button
               type="submit"
               disabled={isSubmittingCommission}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-emerald-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-teal-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
             >
               {isSubmittingCommission ? "Saving changes..." : "Save commission config"}
             </button>

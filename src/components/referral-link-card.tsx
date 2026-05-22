@@ -44,7 +44,7 @@ export function ReferralLinkCard({
 
           {/* Link URL - truncated with hover to show full */}
           <div className="group/link relative">
-            <p className="truncate font-mono text-xs text-emerald-400">
+            <p className="truncate font-mono text-xs text-teal-400">
               {linkUrl}
             </p>
           </div>
@@ -91,8 +91,8 @@ export function ReferralLinkCard({
           onClick={handleCopy}
           className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
             copied
-              ? "border-emerald-600 bg-emerald-500/10 text-emerald-400"
-              : "border-slate-700 bg-slate-800/50 text-slate-300 hover:border-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-400"
+              ? "border-teal-600 bg-teal-500/10 text-teal-400"
+              : "border-slate-700 bg-slate-800/50 text-slate-300 hover:border-teal-600 hover:bg-teal-500/10 hover:text-teal-400"
           }`}
         >
           {copied ? (

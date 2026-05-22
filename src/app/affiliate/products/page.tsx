@@ -76,7 +76,7 @@ export default function AffiliateProductsPage() {
 				</p>
 				<button
 					onClick={() => signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-					className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+					className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
 				>
 					<span>Sign in</span>
 				</button>
@@ -92,7 +92,7 @@ export default function AffiliateProductsPage() {
 	return (
 		<div className="space-y-8">
 			<section className="space-y-3">
-				<p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+				<p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
 					Products &amp; referral links
 				</p>
 				<h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
@@ -151,7 +151,7 @@ export default function AffiliateProductsPage() {
 											<span
 												className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
 													enrolled
-														? "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/40"
+														? "bg-teal-500/10 text-teal-300 ring-1 ring-teal-500/40"
 														: "bg-slate-800/80 text-slate-300 ring-1 ring-slate-700/80"
 												}`}
 											>
@@ -170,7 +170,7 @@ export default function AffiliateProductsPage() {
 									<div className="mt-3 space-y-3">
 										{!enrolled && (
 											<button
-												className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+												className="inline-flex items-center justify-center rounded-full bg-teal-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
 												disabled={enrollMutation.isPending}
 												onClick={() => enrollMutation.mutate(product.id)}
 											>
