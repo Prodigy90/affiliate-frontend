@@ -3,15 +3,21 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "@/lib/auth-client";
+import { AffiliateHero } from "@/components/landing/AffiliateHero";
+import { CommissionMath } from "@/components/landing/CommissionMath";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { PersonaCards } from "@/components/landing/PersonaCards";
+import { AmbassadorTeaser } from "@/components/landing/AmbassadorTeaser";
+import { Faq } from "@/components/landing/Faq";
+import { Footer } from "@/components/landing/Footer";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
+  // Already signed in? Send them through to their dashboard.
   useEffect(() => {
     if (isPending || !session?.user) return;
-
-    // Check role from additionalFields
     const role = (session.user as { role?: string }).role;
     if (role === "admin") {
       router.replace("/admin/payouts");
@@ -20,56 +26,58 @@ export default function Home() {
     }
   }, [isPending, session, router]);
 
-  if (isPending) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50">
-        <p className="text-sm text-slate-300">Checking your session...</p>
-      </div>
-    );
-  }
+  const handleStartEarning = () => {
+    // Kick straight into the Google flow; Better Auth will land them on the
+    // affiliate dashboard once they're authenticated.
+    signIn.social({
+      provider: "google",
+      callbackURL: "/affiliate/dashboard",
+    });
+  };
 
-  if (session?.user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50">
-        <div className="max-w-md rounded-xl border border-slate-800 bg-slate-900/60 p-8 shadow-lg">
-          <h1 className="text-xl font-semibold">Redirecting to your dashboard</h1>
-          <p className="mt-2 text-sm text-slate-300">
-            We detected an active session. Taking you to the appropriate dashboard...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+  // While Better Auth is checking the session, render the landing anyway —
+  // a crawler hitting this page should always see marketing content, not a
+  // spinner. The redirect effect handles authenticated users.
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-50">
-      <main className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/60 p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold tracking-tight">WASBOT Affiliate</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          Unified referral dashboard and admin console for WASBOT. Sign in with Google to
-          access your affiliate earnings or manage payouts and products.
-        </p>
+    <main id="main-content" className="min-h-screen overflow-x-hidden bg-slate-950">
+      <AffiliateHero onPrimaryCta={handleStartEarning} />
+      <CommissionMath />
+      <HowItWorks />
+      <PersonaCards />
+      <AmbassadorTeaser />
+      <Faq />
+      <Footer />
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      {/* Floating bottom CTA bar — single, clear next step */}
+      <div className="sticky bottom-0 z-10 hidden border-t border-slate-800/70 bg-slate-950/90 backdrop-blur md:block">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+          <p className="text-sm text-slate-300">
+            Ready to share what you already love?{" "}
+            <span className="text-slate-500">No card, signup takes 60 seconds.</span>
+          </p>
           <button
             type="button"
-            onClick={() =>
-              signIn.social({
-                provider: "google",
-                callbackURL: "/"
-              })
-            }
-            className="inline-flex w-full items-center justify-center rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-slate-950 shadow hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            onClick={handleStartEarning}
+            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-slate-950 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md"
           >
-            Continue with Google
+            Start earning
+            <svg
+              className="h-3.5 w-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
+            </svg>
           </button>
         </div>
-
-        <p className="mt-4 text-xs text-slate-400">
-          Admins are routed to the admin console. Affiliates are routed to their earnings
-          dashboard.
-        </p>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
