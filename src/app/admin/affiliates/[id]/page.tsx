@@ -261,7 +261,9 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
           <PaginationBar
             page={page}
             pageSize={pageSize}
-            total={pagination.total}
+            // When q is active we filter client-side over the current server
+            // page only, so the server's unfiltered total would mislead.
+            total={q ? visibleCommissions.length : pagination.total}
             rowsOnPage={visibleCommissions.length}
             entityLabel="commission"
             entityLabelPlural="commissions"

@@ -237,7 +237,9 @@ export default function AdminPayoutsPage() {
           <PaginationBar
             page={page}
             pageSize={pageSize}
-            total={pagination.total}
+            // When q is active we filter client-side over the current server
+            // page only, so the server's unfiltered total would mislead.
+            total={q ? visiblePayouts.length : pagination.total}
             rowsOnPage={visiblePayouts.length}
             entityLabel="payout request"
             entityLabelPlural="payout requests"
