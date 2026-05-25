@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,13 +10,18 @@ import { toast } from "sonner";
 import { Copy, Check, Key } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
-import { createProduct, getProducts } from "@/lib/api/admin";
-import type { ProductListResponse } from "@/lib/types/product";
+import { createProduct } from "@/lib/api/admin";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { EmptyState } from "@/components/empty-state";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
+import { SearchInput } from "@/components/admin/SearchInput";
+import {
+  PaginationBar,
+  type PageSize,
+} from "@/components/admin/PaginationBar";
+import { usePaginatedAdminProducts } from "@/lib/hooks/use-paginated-products";
 
 const productSchema = z.object({
 	product_id: z.string().min(1, "Product ID is required"),
@@ -53,6 +58,10 @@ export default function AdminProductsPage() {
   >(null);
   const [copied, setCopied] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(50);
+  const [q, setQ] = useState("");
+
   const handleCopyApiKey = useCallback(async () => {
     if (!lastCreatedKey?.apiKey) return;
 
@@ -76,16 +85,28 @@ export default function AdminProductsPage() {
   }, [lastCreatedKey?.apiKey]);
 
   const {
-    data,
+    items: products,
+    total: productsTotal,
+    totalUnfiltered,
     isLoading,
     isError,
     refetch,
-  } = useQuery<ProductListResponse, Error>({
-    queryKey: ["admin-products"],
-    queryFn: () => getProducts(),
+  } = usePaginatedAdminProducts({
+    page,
+    pageSize,
+    q,
     enabled: isAuthenticated,
-    staleTime: 30_000,
   });
+
+  const handleSearchChange = (next: string) => {
+    setQ(next);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (next: PageSize) => {
+    setPageSize(next);
+    setPage(1);
+  };
 
   const {
     register,
@@ -112,8 +133,6 @@ export default function AdminProductsPage() {
       toast.error(error.message || "Failed to create product.");
     },
   });
-
-  const products = data?.products ?? [];
 
   async function onSubmit(values: ProductFormValues) {
     if (!isAuthenticated) {
@@ -376,10 +395,29 @@ export default function AdminProductsPage() {
             )}
           </div>
 
+          <div className="w-full sm:max-w-sm">
+            <SearchInput
+              value={q}
+              onChange={handleSearchChange}
+              placeholder="Search by name, ID, or status…"
+            />
+          </div>
+
           {isLoading ? (
             <TableSkeleton rows={2} headerWidth="w-40" />
           ) : products.length === 0 ? (
-            <EmptyState lottieUrl={LOTTIE_EMPTY_STATE} message="There are no products yet. Once you create a product, it will appear here." />
+            q ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                <p className="text-sm text-slate-300">
+                  No products match &ldquo;{q}&rdquo;.
+                </p>
+                <p className="text-xs text-slate-500">
+                  Try a different search or clear the filter.
+                </p>
+              </div>
+            ) : (
+              <EmptyState lottieUrl={LOTTIE_EMPTY_STATE} message="There are no products yet. Once you create a product, it will appear here." />
+            )
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-xs text-slate-200">
@@ -433,6 +471,19 @@ export default function AdminProductsPage() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {!isLoading && totalUnfiltered > 0 && (
+            <PaginationBar
+              page={page}
+              pageSize={pageSize}
+              total={productsTotal}
+              rowsOnPage={products.length}
+              entityLabel="product"
+              entityLabelPlural="products"
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+            />
           )}
         </div>
       </section>
