@@ -28,6 +28,12 @@ export type GetAdminPayoutsParams = {
   toDate?: string; // YYYY-MM-DD
   page?: number;
   limit?: number;
+  /**
+   * Forwarded as `q` to the backend if it ever starts honouring search. The
+   * current /admin/payouts handler ignores unknown params, so passing this is
+   * a safe no-op until backend support lands.
+   */
+  q?: string;
 };
 
 export async function getAdminPayouts(
@@ -53,6 +59,9 @@ export async function getAdminPayouts(
   }
   if (params.limit && params.limit > 0) {
     search.set("limit", String(params.limit));
+  }
+  if (params.q && params.q.trim()) {
+    search.set("q", params.q.trim());
   }
 
   const query = search.toString();
@@ -87,6 +96,12 @@ export type GetAdminAffiliatesParams = {
   status?: string;
   page?: number;
   limit?: number;
+  /**
+   * Free-text search forwarded as `q`. Backend support pending — for now this
+   * is silently dropped by the handler, and the admin page applies an
+   * additional client-side filter on top of the returned rows.
+   */
+  q?: string;
 };
 
 export async function getAdminAffiliates(
@@ -106,6 +121,9 @@ export async function getAdminAffiliates(
   }
   if (params.limit && params.limit > 0) {
     search.set("limit", String(params.limit));
+  }
+  if (params.q && params.q.trim()) {
+    search.set("q", params.q.trim());
   }
 
   const query = search.toString();
@@ -128,6 +146,8 @@ export type GetAdminAffiliateCommissionsParams = {
   status?: string;
   fromDate?: string; // YYYY-MM-DD
   toDate?: string; // YYYY-MM-DD
+  /** Forwarded as `q` (backend support pending). */
+  q?: string;
 };
 
 export async function getAdminAffiliateCommissions(
@@ -154,6 +174,9 @@ export async function getAdminAffiliateCommissions(
   }
   if (params.toDate) {
     search.set("to_date", params.toDate);
+  }
+  if (params.q && params.q.trim()) {
+    search.set("q", params.q.trim());
   }
 
   const query = search.toString();
