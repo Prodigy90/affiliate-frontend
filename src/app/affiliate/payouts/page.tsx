@@ -117,7 +117,7 @@ export default function AffiliatePayoutsPage() {
         </p>
         <button
           onClick={() => signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
         >
           <span>Sign in</span>
         </button>
@@ -128,7 +128,7 @@ export default function AffiliatePayoutsPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
           Payouts
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
@@ -158,7 +158,7 @@ export default function AffiliatePayoutsPage() {
                 step="1"
                 min={MIN_PAYOUT_NGN}
                 placeholder={`Min ₦${MIN_PAYOUT_NGN.toLocaleString()}`}
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...register("amount", { valueAsNumber: true })}
               />
               {errors.amount && (
@@ -170,7 +170,7 @@ export default function AffiliatePayoutsPage() {
             <button
               type="submit"
               disabled={isSubmitting || availableNaira < MIN_PAYOUT_NGN}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-emerald-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-teal-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
             >
               {isSubmitting ? "Requesting..." : "Request payout"}
             </button>

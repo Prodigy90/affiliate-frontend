@@ -46,7 +46,7 @@ export function AuthGuard({ children, requireAdmin = false }: AuthGuardProps) {
               callbackURL: DEFAULT_LOGIN_REDIRECT
             })
           }
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
         >
           <span>Sign in</span>
         </button>

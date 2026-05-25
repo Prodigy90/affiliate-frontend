@@ -129,7 +129,7 @@ export default function AnalyticsPage() {
               onChange={(e) =>
                 setDateRange((prev) => ({ ...prev, from: e.target.value }))
               }
-              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-emerald-500 focus:outline-none"
+              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             />
           </div>
           <div className="flex-1 min-w-50">
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
               onChange={(e) =>
                 setDateRange((prev) => ({ ...prev, to: e.target.value }))
               }
-              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-emerald-500 focus:outline-none"
+              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             />
           </div>
           <div className="flex-1 min-w-50">
@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
               onChange={(e) =>
                 setGranularity(e.target.value as "day" | "week" | "month")
               }
-              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-emerald-500 focus:outline-none"
+              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             >
               <option value="day">Daily</option>
               <option value="week">Weekly</option>
@@ -182,7 +182,7 @@ export default function AnalyticsPage() {
                 title="Successful Referrals"
                 value={conversionMetrics.successful_referrals.toString()}
                 subtitle="Converted to sales"
-                accent="from-green-500/20 to-emerald-500/10"
+                accent="from-green-500/20 to-teal-500/10"
               />
               <StatCard
                 title="Conversion Rate"
@@ -213,8 +213,8 @@ export default function AnalyticsPage() {
                 <AreaChart data={earningsTrend}>
                   <defs>
                     <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
                   <Area
                     type="monotone"
                     dataKey="total_earnings"
-                    stroke="#10b981"
+                    stroke="#14b8a6"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorEarnings)"
@@ -281,7 +281,7 @@ export default function AnalyticsPage() {
                       "Commissions",
                     ]}
                   />
-                  <Bar dataKey="total_commissions" fill="#10b981" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="total_commissions" fill="#14b8a6" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

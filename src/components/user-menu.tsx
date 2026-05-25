@@ -31,7 +31,7 @@ export function UserMenu() {
             callbackURL: window.location.pathname
           })
         }
-        className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200 transition-colors hover:bg-emerald-500/20"
+        className="inline-flex items-center gap-1 rounded-full border border-teal-500/40 bg-teal-500/10 px-3 py-1 text-[11px] font-medium text-teal-200 transition-colors hover:bg-teal-500/20"
       >
         <LogIn className="h-3 w-3" />
         <span>Sign in</span>

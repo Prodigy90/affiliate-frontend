@@ -150,7 +150,7 @@ export default function AdminProductsPage() {
         </p>
         <button
           onClick={() => signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
         >
           <span>Sign in</span>
         </button>
@@ -171,7 +171,7 @@ export default function AdminProductsPage() {
   return (
     <div className="space-y-8">
 	      <section className="space-y-3">
-	        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+	        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
 	          Admin · Products
 	        </p>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
@@ -194,7 +194,7 @@ export default function AdminProductsPage() {
               <input
                 type="text"
                 placeholder="e.g. whatsapp_bot"
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...register("product_id")}
               />
               {errors.product_id && (
@@ -209,7 +209,7 @@ export default function AdminProductsPage() {
               <input
                 type="text"
                 placeholder="WASBOT - WhatsApp Automation"
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...register("name")}
               />
               {errors.name && (
@@ -222,7 +222,7 @@ export default function AdminProductsPage() {
               <textarea
                 rows={3}
                 placeholder="Short description for admins and internal docs."
-                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 {...register("description")}
               />
               {errors.description && (
@@ -238,7 +238,7 @@ export default function AdminProductsPage() {
                 <input
                   type="url"
                   placeholder="https://wasbot.ng"
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...register("base_url")}
                 />
                 {errors.base_url && (
@@ -253,7 +253,7 @@ export default function AdminProductsPage() {
                 <input
                   type="text"
                   placeholder="/signup"
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...register("signup_path")}
                 />
                 {errors.signup_path && (
@@ -272,7 +272,7 @@ export default function AdminProductsPage() {
                   step="0.1"
                   min={0}
                   placeholder="20"
-                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   {...register("base_commission_rate", { valueAsNumber: true })}
                 />
                 {errors.base_commission_rate && (
@@ -292,7 +292,7 @@ export default function AdminProductsPage() {
                     <input
                       type="checkbox"
                       {...register("unlimited_commissions")}
-                      className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-teal-500 focus:ring-teal-500"
                     />
                     <span className="text-xs text-slate-300">Unlimited per referral</span>
                   </label>
@@ -302,7 +302,7 @@ export default function AdminProductsPage() {
                       min={1}
                       step={1}
                       placeholder="2"
-                      className="w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                      className="w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                       {...register("max_commission_payments")}
                     />
                   )}
@@ -318,7 +318,7 @@ export default function AdminProductsPage() {
             <button
               type="submit"
               disabled={isSubmitting || createMutation.isPending}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-emerald-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-teal-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
             >
               {isSubmitting || createMutation.isPending
                 ? "Creating product..."
@@ -326,8 +326,8 @@ export default function AdminProductsPage() {
             </button>
 
             {lastCreatedKey && (
-              <div className="mt-4 space-y-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-emerald-400">
+              <div className="mt-4 space-y-2 rounded-lg border border-teal-500/30 bg-teal-500/5 p-3">
+                <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-teal-400">
                   <Key className="h-3.5 w-3.5" />
                   <span>API Key for {lastCreatedKey.productId}</span>
                 </div>
@@ -341,7 +341,7 @@ export default function AdminProductsPage() {
                       onClick={handleCopyApiKey}
                       className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors ${
                         copied
-                          ? "bg-emerald-500/20 text-emerald-400"
+                          ? "bg-teal-500/20 text-teal-400"
                           : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
                       }`}
                       aria-label="Copy API key"
@@ -407,7 +407,7 @@ export default function AdminProductsPage() {
                       <td className="px-2 py-2">
                         <p className="text-xs text-slate-200">
                           {p.max_commission_payments === null ? (
-                            <span className="text-emerald-400">Unlimited</span>
+                            <span className="text-teal-400">Unlimited</span>
                           ) : (
                             p.max_commission_payments
                           )}

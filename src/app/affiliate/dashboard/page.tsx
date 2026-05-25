@@ -34,7 +34,7 @@ export default function AffiliateDashboardPage() {
               callbackURL: "/affiliate/dashboard"
             })
           }
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
         >
           <span>Sign in</span>
         </button>
@@ -80,7 +80,7 @@ export default function AffiliateDashboardPage() {
 						</p>
 					)}
 				<button
-					className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm hover:bg-emerald-400 transition-colors"
+					className="rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm hover:bg-teal-400 transition-colors"
 					onClick={() => refetch()}
 				>
 					Try again
@@ -95,7 +95,7 @@ export default function AffiliateDashboardPage() {
 		<div className="space-y-8">
 			<section className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)] items-center">
 				<div className="space-y-3">
-					<p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+					<p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
 						Affiliate dashboard
 					</p>
 					<h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
@@ -119,7 +119,7 @@ export default function AffiliateDashboardPage() {
 				<StatCard
 					title="Total earned"
 					value={formatCurrency(data.total_earnings, currency)}
-					accent="from-emerald-500/20 to-emerald-500/5"
+					accent="from-teal-500/20 to-teal-500/5"
 				/>
 				<StatCard
 					title="Pending balance"

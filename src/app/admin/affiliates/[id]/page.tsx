@@ -74,7 +74,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
         </p>
         <button
           onClick={() => signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400"
         >
           <span>Sign in</span>
         </button>
@@ -104,7 +104,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
         </p>
         <div className="flex gap-3">
           <button
-            className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm hover:bg-emerald-400 transition-colors"
+            className="rounded-full bg-teal-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm hover:bg-teal-400 transition-colors"
             onClick={() => refetchEarnings()}
           >
             Try again
@@ -125,7 +125,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
           Admin · Affiliate detail
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
@@ -195,7 +195,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
                       </p>
                     </td>
                     <td className="px-2 py-2">
-                      <p className="text-xs font-semibold text-emerald-300">
+                      <p className="text-xs font-semibold text-teal-300">
                         {formatCurrency(c.commission_amount, c.currency)}
                       </p>
                     </td>

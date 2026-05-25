@@ -33,7 +33,7 @@ export default function AffiliateLayout({ children }: AffiliateLayoutProps) {
 									<Link
 										key={item.href}
 										href={item.href}
-										className="rounded-full px-3 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+										className="rounded-full px-3 py-1 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-teal-400 transition-colors"
 									>
 										{item.label}
 									</Link>

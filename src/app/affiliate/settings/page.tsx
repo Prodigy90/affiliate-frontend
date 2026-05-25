@@ -187,7 +187,7 @@ export default function AffiliateSettingsPage() {
         </p>
         <button
           onClick={() => signIn.social({ provider: "google", callbackURL: window.location.pathname })}
-          className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition-colors"
+          className="rounded-md bg-teal-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-teal-400 transition-colors"
         >
           Sign in with Google
         </button>
@@ -269,7 +269,7 @@ export default function AffiliateSettingsPage() {
                 id="name"
                 type="text"
                 {...profileForm.register("name")}
-                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
               />
               {profileForm.formState.errors.name && (
                 <p className="mt-1 text-xs text-red-400">
@@ -296,7 +296,7 @@ export default function AffiliateSettingsPage() {
             <button
               type="submit"
               disabled={profileMutation.isPending || !profileForm.formState.isDirty}
-              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+              className="rounded-md bg-teal-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-teal-400 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
             >
               {profileMutation.isPending ? "Saving..." : "Save Profile"}
             </button>
@@ -336,7 +336,7 @@ export default function AffiliateSettingsPage() {
                 type="text"
                 maxLength={10}
                 {...bankDetailsForm.register("account_number")}
-                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 font-mono focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 font-mono focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 placeholder="0123456789"
               />
               {bankDetailsForm.formState.errors.account_number && (
@@ -359,7 +359,7 @@ export default function AffiliateSettingsPage() {
                   </span>
                 )}
                 {isAccountNameResolved && !isResolving && (
-                  <span className="ml-2 inline-flex items-center text-xs text-emerald-400">
+                  <span className="ml-2 inline-flex items-center text-xs text-teal-400">
                     <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -375,8 +375,8 @@ export default function AffiliateSettingsPage() {
                   disabled={isResolving}
                   className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 transition-colors ${
                     isAccountNameResolved
-                      ? "border-emerald-600 bg-emerald-950/30 text-slate-100 focus:border-emerald-500 focus:ring-emerald-500"
-                      : "border-slate-700 bg-slate-800 text-slate-100 focus:border-emerald-500 focus:ring-emerald-500"
+                      ? "border-teal-600 bg-teal-950/30 text-slate-100 focus:border-teal-500 focus:ring-teal-500"
+                      : "border-slate-700 bg-slate-800 text-slate-100 focus:border-teal-500 focus:ring-teal-500"
                   } ${isResolving ? "cursor-wait opacity-60" : ""}`}
                   placeholder={isResolving ? "Verifying account..." : "Will be auto-filled after verification"}
                 />
@@ -403,7 +403,7 @@ export default function AffiliateSettingsPage() {
             <button
               type="submit"
               disabled={bankDetailsMutation.isPending || !bankDetailsForm.formState.isDirty}
-              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+              className="rounded-md bg-teal-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-teal-400 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
             >
               {bankDetailsMutation.isPending ? "Saving..." : "Save Bank Details"}
             </button>
