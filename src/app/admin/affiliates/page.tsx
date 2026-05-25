@@ -203,7 +203,10 @@ export default function AdminAffiliatesPage() {
           <PaginationBar
             page={page}
             pageSize={pageSize}
-            total={pagination.total}
+            // When q is active we filter client-side over the current server
+            // page only, so the server's unfiltered total would mislead. Pass
+            // the visible (filtered) count so "Showing X of Y" stays honest.
+            total={q ? visibleAffiliates.length : pagination.total}
             rowsOnPage={visibleAffiliates.length}
             entityLabel="affiliate"
             entityLabelPlural="affiliates"
