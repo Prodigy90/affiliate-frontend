@@ -4,6 +4,7 @@ import Lottie from "react-lottie-player";
 import { signIn } from "@/lib/auth-client";
 import { formatCurrency, formatInteger } from "@/lib/utils/format";
 import { StatCard } from "@/components/stat-card";
+import { ActivityFeed } from "@/components/activity-feed/ActivityFeed";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 
@@ -148,6 +149,7 @@ export default function AffiliateDashboardPage() {
 					subtitle="successful / total"
 				/>
 			</section>
+			<ActivityFeed />
 		</div>
 	);
 }
