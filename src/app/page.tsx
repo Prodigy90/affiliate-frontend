@@ -6,10 +6,10 @@ import { useSession, signIn } from "@/lib/auth-client";
 import { AffiliateHero } from "@/components/landing/AffiliateHero";
 import { CommissionMath } from "@/components/landing/CommissionMath";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { PersonaCards } from "@/components/landing/PersonaCards";
 import { AmbassadorTeaser } from "@/components/landing/AmbassadorTeaser";
 import { Faq } from "@/components/landing/Faq";
 import { Footer } from "@/components/landing/Footer";
+import { PublicNav } from "@/components/landing/PublicNav";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
@@ -40,10 +40,10 @@ export default function Home() {
   // spinner. The redirect effect handles authenticated users.
   return (
     <main id="main-content" className="min-h-screen overflow-x-hidden bg-slate-950">
+      <PublicNav onStartEarning={handleStartEarning} />
       <AffiliateHero onPrimaryCta={handleStartEarning} />
       <CommissionMath />
       <HowItWorks />
-      <PersonaCards />
       <AmbassadorTeaser />
       <Faq />
       <Footer />
