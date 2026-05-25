@@ -16,8 +16,7 @@ import { TableSkeleton } from "@/components/table-skeleton";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
-
-const MIN_PAYOUT_NGN = 5000; // Minimum payout in naira
+import { MIN_PAYOUT_NGN } from "@/lib/constants/payouts";
 
 const payoutSchema = z.object({
 	amount: z.coerce

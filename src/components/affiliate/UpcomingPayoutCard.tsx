@@ -3,8 +3,7 @@ import { ArrowRight, Wallet } from "lucide-react";
 
 import type { EarningsSummary } from "@/lib/types/affiliate";
 import { formatCurrency } from "@/lib/utils/format";
-
-const MIN_PAYOUT_KOBO = 5000 * 100; // ₦5,000 minimum (matches payouts page)
+import { MIN_PAYOUT_KOBO } from "@/lib/constants/payouts";
 
 export function UpcomingPayoutCard({ data }: { data: EarningsSummary }) {
 	const currency = data.currency;
