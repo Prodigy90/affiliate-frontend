@@ -1,33 +1,56 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
 
-import { getAdminAffiliates } from "@/lib/api/admin";
-import type { AdminAffiliateListResponse } from "@/lib/types/admin";
+import type { AdminAffiliate } from "@/lib/types/admin";
 import { formatDate } from "@/lib/utils/format";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { EmptyState } from "@/components/empty-state";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
+import { SearchInput } from "@/components/admin/SearchInput";
+import {
+  PaginationBar,
+  type PageSize,
+} from "@/components/admin/PaginationBar";
+import { usePaginatedAdminAffiliates } from "@/lib/hooks/use-paginated-affiliates";
 
 export default function AdminAffiliatesPage() {
   const { isAuthenticated, role, status } = useAuthSession();
 
-  const { data, isLoading, isError, refetch } = useQuery<
-    AdminAffiliateListResponse,
-    Error
-  >({
-    queryKey: ["admin-affiliates"],
-    queryFn: () => getAdminAffiliates({ page: 1, limit: 20 }),
-    enabled: isAuthenticated,
-    staleTime: 30_000
-  });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(50);
+  const [q, setQ] = useState("");
 
-  const affiliates = data?.affiliates ?? [];
+  const { data, isLoading, isError, refetch, isFetching } =
+    usePaginatedAdminAffiliates({
+      page,
+      pageSize,
+      q,
+      enabled: isAuthenticated,
+    });
+
   const pagination = data?.pagination;
+
+  // Client-side narrow on top of the server page. Backend doesn't filter on q
+  // yet, so without this typing wouldn't visibly do anything until that ships.
+  const visibleAffiliates = useMemo(
+    () => filterAffiliatesByQuery(data?.affiliates ?? [], q),
+    [data?.affiliates, q],
+  );
+
+  const handleSearchChange = (next: string) => {
+    setQ(next);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (next: PageSize) => {
+    setPageSize(next);
+    setPage(1);
+  };
 
   if (status === "loading") {
     return (
@@ -79,25 +102,48 @@ export default function AdminAffiliatesPage() {
       </section>
 
       <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
             All affiliates
           </p>
-          {isError && (
-            <RetryButton onClick={() => refetch()} />
-          )}
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            {isFetching && !isLoading && <span>Refreshing…</span>}
+            {isError && <RetryButton onClick={() => refetch()} />}
+          </div>
+        </div>
+
+        <div className="w-full sm:max-w-sm">
+          <SearchInput
+            value={q}
+            onChange={handleSearchChange}
+            placeholder="Search by name, email, or ref ID…"
+          />
         </div>
 
         {isLoading ? (
-          <TableSkeleton rows={2} headerWidth="w-40" />
+          <TableSkeleton rows={4} headerWidth="w-40" />
         ) : isError ? (
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
             <p className="text-xs text-slate-300">
               We couldn&apos;t load affiliates right now. Please try again.
             </p>
           </div>
-        ) : affiliates.length === 0 ? (
-          <EmptyState lottieUrl={LOTTIE_EMPTY_STATE} message="There are no affiliates yet. Once people sign up, they'll appear here." />
+        ) : visibleAffiliates.length === 0 ? (
+          q ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+              <p className="text-sm text-slate-300">
+                No affiliates match &ldquo;{q}&rdquo;.
+              </p>
+              <p className="text-xs text-slate-500">
+                Try a different search or clear the filter.
+              </p>
+            </div>
+          ) : (
+            <EmptyState
+              lottieUrl={LOTTIE_EMPTY_STATE}
+              message="There are no affiliates yet. Once people sign up, they'll appear here."
+            />
+          )
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-xs text-slate-200">
@@ -110,7 +156,7 @@ export default function AdminAffiliatesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {affiliates.map((a) => (
+                {visibleAffiliates.map((a) => (
                   <tr key={a.id} className="align-middle">
                     <td className="px-2 py-2">
                       <div className="space-y-0.5">
@@ -150,16 +196,40 @@ export default function AdminAffiliatesPage() {
                 ))}
               </tbody>
             </table>
-
-            {pagination && (
-              <p className="pt-3 text-[11px] text-slate-400">
-                Showing page {pagination.page} of {pagination.total_pages} ·{" "}
-                {pagination.total} affiliates
-              </p>
-            )}
           </div>
+        )}
+
+        {pagination && (
+          <PaginationBar
+            page={page}
+            pageSize={pageSize}
+            // When q is active we filter client-side over the current server
+            // page only, so the server's unfiltered total would mislead. Pass
+            // the visible (filtered) count so "Showing X of Y" stays honest.
+            total={q ? visibleAffiliates.length : pagination.total}
+            rowsOnPage={visibleAffiliates.length}
+            entityLabel="affiliate"
+            entityLabelPlural="affiliates"
+            onPageChange={setPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         )}
       </section>
     </div>
   );
+}
+
+function filterAffiliatesByQuery(rows: AdminAffiliate[], q: string) {
+  if (!q) return rows;
+  const needle = q.trim().toLowerCase();
+  if (!needle) return rows;
+  return rows.filter((a) => {
+    return (
+      (a.name ?? "").toLowerCase().includes(needle) ||
+      (a.email ?? "").toLowerCase().includes(needle) ||
+      (a.ref_id ?? "").toLowerCase().includes(needle) ||
+      (a.role ?? "").toLowerCase().includes(needle) ||
+      (a.status ?? "").toLowerCase().includes(needle)
+    );
+  });
 }
