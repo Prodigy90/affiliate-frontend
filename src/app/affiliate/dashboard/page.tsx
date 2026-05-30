@@ -5,14 +5,15 @@ import { ActivityFeed } from "@/components/activity-feed/ActivityFeed";
 import { StatTiles } from "@/components/affiliate/StatTiles";
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
 import { UpcomingPayoutCard } from "@/components/affiliate/UpcomingPayoutCard";
-import { ReferredSignupsCard } from "@/components/affiliate/ReferredSignupsCard";
 import { TopEarnersPanel } from "@/components/affiliate/TopEarnersPanel";
 import { useEarnings } from "@/lib/hooks/use-earnings";
+import { useSignups } from "@/lib/hooks/use-signups";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 
 export default function AffiliateDashboardPage() {
 	const { isLoading: authLoading, isAuthenticated, affiliate } = useAffiliate();
 	const { data, isLoading, isError, error, refetch } = useEarnings();
+	const { data: signupsData } = useSignups(1);
 
 	if (authLoading) {
 		return (
@@ -110,7 +111,7 @@ export default function AffiliateDashboardPage() {
 			</header>
 
 			{/* Stat tiles row */}
-			<StatTiles data={data} />
+			<StatTiles data={data} signupsCount={signupsData?.total} />
 
 			{/* Activity feed (2/3) + side stack (1/3) */}
 			<div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -118,7 +119,6 @@ export default function AffiliateDashboardPage() {
 				<div className="grid gap-3">
 					<ShareLinkCard />
 					<UpcomingPayoutCard data={data} />
-					<ReferredSignupsCard />
 				</div>
 			</div>
 
