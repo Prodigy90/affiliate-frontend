@@ -128,3 +128,19 @@ export type ValidateRefIDResponse = {
     name: string;
   };
 };
+
+// Affiliate-facing referred-signup conversions (GET /api/v1/signups).
+// Mirrors the backend DTO: trace_id / email hash are intentionally absent.
+export type ReferredSignup = {
+  id: string;
+  product_id: string;
+  occurred_at: string;
+  created_at: string;
+};
+
+export type SignupListResponse = {
+  total: number;
+  limit: number;
+  offset: number;
+  signups: ReferredSignup[];
+};

@@ -5,6 +5,7 @@ import { ActivityFeed } from "@/components/activity-feed/ActivityFeed";
 import { StatTiles } from "@/components/affiliate/StatTiles";
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
 import { UpcomingPayoutCard } from "@/components/affiliate/UpcomingPayoutCard";
+import { ReferredSignupsCard } from "@/components/affiliate/ReferredSignupsCard";
 import { TopEarnersPanel } from "@/components/affiliate/TopEarnersPanel";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
@@ -117,6 +118,7 @@ export default function AffiliateDashboardPage() {
 				<div className="grid gap-3">
 					<ShareLinkCard />
 					<UpcomingPayoutCard data={data} />
+					<ReferredSignupsCard />
 				</div>
 			</div>
 
