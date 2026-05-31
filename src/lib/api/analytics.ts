@@ -3,6 +3,7 @@ import type {
   ConversionMetrics,
   EarningsTrendPoint,
   EarningsTrendResponse,
+  FunnelData,
   ProductPerformance,
   ProductPerformanceResponse,
 } from "../types/analytics";
@@ -50,5 +51,19 @@ export async function getConversionMetrics(params: {
 
   return await apiGet<ConversionMetrics>(
     `/analytics/conversion-metrics?${queryParams.toString()}`
+  );
+}
+
+export async function getFunnel(params?: {
+  from_date?: string;
+  to_date?: string;
+}): Promise<FunnelData> {
+  const queryParams = new URLSearchParams();
+  if (params?.from_date) queryParams.append("from_date", params.from_date);
+  if (params?.to_date) queryParams.append("to_date", params.to_date);
+
+  const query = queryParams.toString();
+  return await apiGet<FunnelData>(
+    query ? `/analytics/funnel?${query}` : `/analytics/funnel`
   );
 }
