@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,6 +18,7 @@ import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { MIN_PAYOUT_NGN } from "@/lib/constants/payouts";
+import { PaginationBar, type PageSize } from "@/components/admin/PaginationBar";
 
 const payoutSchema = z.object({
 	amount: z.coerce
@@ -45,6 +47,18 @@ export default function AffiliatePayoutsPage() {
     enabled: isAuthenticated,
     staleTime: 30_000,
   });
+
+  // Client-side pagination: the payouts list endpoint returns the full array
+  // (no page/limit params on the backend), so we slice it here. Page state is
+  // local to the history list and never re-fetches.
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(20);
+
+  const allPayouts = payouts ?? [];
+  const totalPages = Math.max(1, Math.ceil(allPayouts.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const visiblePayouts = allPayouts.slice(pageStart, pageStart + pageSize);
 
   const {
     register,
@@ -190,30 +204,49 @@ export default function AffiliatePayoutsPage() {
           </div>
           {payoutsLoading ? (
             <TableSkeleton />
-          ) : !payouts || payouts.length === 0 ? (
+          ) : allPayouts.length === 0 ? (
             <EmptyState
               lottieUrl={LOTTIE_EMPTY_STATE}
               message="You haven't requested any payouts yet."
             />
           ) : (
-            <ul className="divide-y divide-slate-800/80 text-xs">
-              {payouts.map((payout) => (
-                <li
-                  key={payout.id}
-                  className="flex items-center justify-between gap-3 py-2"
-                >
-                  <div className="space-y-0.5">
-                    <p className="font-medium text-slate-100">
-                      {formatCurrency(payout.amount, payout.currency)}
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Requested on {formatDate(payout.created_at)}
-                    </p>
-                  </div>
-                  <StatusBadge status={payout.status} variant="payout" />
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="divide-y divide-slate-800/80 text-xs">
+                {visiblePayouts.map((payout) => (
+                  <li
+                    key={payout.id}
+                    className="flex items-center justify-between gap-3 py-2"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="font-medium text-slate-100">
+                        {formatCurrency(payout.amount, payout.currency)}
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        Requested on {formatDate(payout.created_at)}
+                      </p>
+                    </div>
+                    <StatusBadge status={payout.status} variant="payout" />
+                  </li>
+                ))}
+              </ul>
+              {allPayouts.length > pageSize && (
+                <PaginationBar
+                  page={safePage}
+                  pageSize={pageSize}
+                  total={allPayouts.length}
+                  rowsOnPage={visiblePayouts.length}
+                  entityLabel="payout"
+                  entityLabelPlural="payouts"
+                  onPageChange={(next) =>
+                    setPage(Math.min(Math.max(1, next), totalPages))
+                  }
+                  onPageSizeChange={(next) => {
+                    setPageSize(next);
+                    setPage(1);
+                  }}
+                />
+              )}
+            </>
           )}
         </div>
       </section>

@@ -144,3 +144,15 @@ export type SignupListResponse = {
   offset: number;
   signups: ReferredSignup[];
 };
+
+// Caller's own standing on the affiliate leaderboard (GET /api/v1/leaderboard/me).
+// Privacy decision: affiliates only ever see their own rank, never a list of
+// other earners. `ranked` is false for zero-earnings affiliates.
+export type OwnRank = {
+  rank: number;
+  total_affiliates: number;
+  percentile: number; // raw float, e.g. 3.53 → "Top 4%"
+  total_earnings: number; // int64 kobo
+  currency: string;
+  ranked: boolean;
+};

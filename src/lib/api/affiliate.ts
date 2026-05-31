@@ -2,6 +2,7 @@ import type {
   CommissionListResponse,
   CreatePayoutResponse,
   EarningsSummary,
+  OwnRank,
   Payout,
   PayoutListResponse,
   AffiliateProductsResponse,
@@ -35,9 +36,17 @@ export async function requestPayout(
 }
 
 export async function getCommissions(
-  _authToken?: string
+  page = 1,
+  limit = 20
 ): Promise<CommissionListResponse> {
-  return apiGet<CommissionListResponse>("/commissions");
+  return apiGet<CommissionListResponse>(
+    `/commissions?page=${page}&limit=${limit}`
+  );
+}
+
+// Caller's own leaderboard standing. Auth handled by the proxy via cookies.
+export async function getOwnRank(): Promise<OwnRank> {
+  return apiGet<OwnRank>("/leaderboard/me");
 }
 
 export async function getSignups(
