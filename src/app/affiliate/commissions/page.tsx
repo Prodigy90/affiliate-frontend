@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { signIn } from "@/lib/auth-client";
 
 import { getCommissions } from "@/lib/api/affiliate";
@@ -12,18 +13,25 @@ import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
 import { useAuthSession } from "@/components/auth-guard";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
+import { PaginationBar, type PageSize } from "@/components/admin/PaginationBar";
 
 export default function AffiliateCommissionsPage() {
 	  const { isAuthenticated, status } = useAuthSession();
+
+	  const [page, setPage] = useState(1);
+	  const [limit, setLimit] = useState<PageSize>(20);
 
 	  const { data, isLoading, isError, refetch } = useQuery<
 	    CommissionListResponse,
 	    Error
 	  >({
-	    queryKey: ["commissions", { page: 1, limit: 20 }],
-	    queryFn: () => getCommissions(),
+	    queryKey: ["commissions", { page, limit }],
+	    queryFn: () => getCommissions(page, limit),
 	    enabled: isAuthenticated,
 	    staleTime: 30_000,
+	    // Keep the previous page visible while the next one loads so the table
+	    // doesn't flash empty between page changes.
+	    placeholderData: keepPreviousData,
 	    // As with earnings, don't keep retrying on hard failures; it just
 	    // makes the page feel slow.
 	    retry: 0
@@ -153,11 +161,23 @@ export default function AffiliateCommissionsPage() {
             </table>
 
             {pagination && (
-              <p className="pt-3 text-[11px] text-slate-400">
-                Showing page {pagination.page} of {pagination.total_pages} ·
-                {" "}
-                {pagination.total} commissions
-              </p>
+              <PaginationBar
+                page={pagination.page}
+                pageSize={limit}
+                total={pagination.total}
+                rowsOnPage={commissions.length}
+                entityLabel="commission"
+                entityLabelPlural="commissions"
+                onPageChange={(next) => {
+                  const max = Math.max(1, pagination.total_pages);
+                  setPage(Math.min(Math.max(1, next), max));
+                }}
+                onPageSizeChange={(next) => {
+                  setLimit(next);
+                  // Reset to the first page so we don't land past the new last page.
+                  setPage(1);
+                }}
+              />
             )}
           </div>
         )}

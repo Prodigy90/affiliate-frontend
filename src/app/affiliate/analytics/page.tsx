@@ -165,8 +165,17 @@ export default function AnalyticsPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-100">
-          <div className="text-slate-400">Loading analytics...</div>
+        <div className="space-y-8" aria-busy="true">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-28 animate-pulse rounded-lg border border-slate-800 bg-slate-900/60"
+              />
+            ))}
+          </div>
+          <div className="h-[360px] animate-pulse rounded-lg border border-slate-800 bg-slate-900/60" />
+          <div className="h-[360px] animate-pulse rounded-lg border border-slate-800 bg-slate-900/60" />
         </div>
       ) : (
         <>

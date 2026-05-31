@@ -1,12 +1,12 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { signIn } from "@/lib/auth-client";
 
 import { getAdminAffiliateEarnings } from "@/lib/api/admin";
-import type { Commission, EarningsSummary } from "@/lib/types/affiliate";
+import type { EarningsSummary } from "@/lib/types/affiliate";
 import type { PageProps } from "@/lib/types/session";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
@@ -29,7 +29,20 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(50);
+  // qInput is the raw, controlled input value; q is the debounced value that
+  // actually drives the query so we don't refetch on every keystroke.
+  const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
+
+  // Debounce the search input into q (~300ms) and reset to page 1 whenever the
+  // debounced term changes.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setQ(qInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [qInput]);
 
   const {
     data: earnings,
@@ -59,15 +72,13 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
   const pagination = commissionsData?.pagination;
 
-  const visibleCommissions = useMemo(
-    () => filterCommissionsByQuery(commissionsData?.commissions ?? [], q),
-    [commissionsData?.commissions, q],
-  );
+  // Backend now filters on q (ILIKE across transaction id / customer / product
+  // name) and returns the correct total, so we render the server rows directly.
+  const commissions = commissionsData?.commissions ?? [];
 
-  const handleSearchChange = (next: string) => {
-    setQ(next);
-    setPage(1);
-  };
+  const handleSearchChange = useCallback((next: string) => {
+    setQInput(next);
+  }, []);
 
   const handlePageSizeChange = (next: PageSize) => {
     setPageSize(next);
@@ -184,15 +195,15 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
         <div className="w-full sm:max-w-sm">
           <SearchInput
-            value={q}
+            value={qInput}
             onChange={handleSearchChange}
-            placeholder="Search by product, plan, or status…"
+            placeholder="Search by transaction ID, customer, or product…"
           />
         </div>
 
         {isLoadingCommissions ? (
           <TableSkeleton rows={4} headerWidth="w-32" />
-        ) : visibleCommissions.length === 0 ? (
+        ) : commissions.length === 0 ? (
           q ? (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
               <p className="text-sm text-slate-300">
@@ -221,7 +232,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {visibleCommissions.map((c) => (
+                {commissions.map((c) => (
                   <tr key={c.id} className="align-middle">
                     <td className="px-2 py-2">
                       <p className="text-xs font-medium text-slate-100">
@@ -261,10 +272,9 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
           <PaginationBar
             page={page}
             pageSize={pageSize}
-            // When q is active we filter client-side over the current server
-            // page only, so the server's unfiltered total would mislead.
-            total={q ? visibleCommissions.length : pagination.total}
-            rowsOnPage={visibleCommissions.length}
+            // Backend filters on q and returns the correct filtered total.
+            total={pagination.total}
+            rowsOnPage={commissions.length}
             entityLabel="commission"
             entityLabelPlural="commissions"
             onPageChange={setPage}
@@ -274,21 +284,6 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
       </section>
     </div>
   );
-}
-
-function filterCommissionsByQuery(rows: Commission[], q: string) {
-  if (!q) return rows;
-  const needle = q.trim().toLowerCase();
-  if (!needle) return rows;
-  return rows.filter((c) => {
-    return (
-      (c.product?.name ?? "").toLowerCase().includes(needle) ||
-      (c.plan_name ?? "").toLowerCase().includes(needle) ||
-      (c.status ?? "").toLowerCase().includes(needle) ||
-      (c.currency ?? "").toLowerCase().includes(needle) ||
-      (c.subscription_interval ?? "").toLowerCase().includes(needle)
-    );
-  });
 }
 
 type StatCardProps = {

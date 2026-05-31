@@ -12,7 +12,7 @@ import type { ReferralLinksListResponse } from "@/lib/types/affiliate";
 export function ShareLinkCard() {
 	const [copied, setCopied] = useState(false);
 
-	const { data, isLoading } = useQuery<ReferralLinksListResponse, Error>({
+	const { data, isLoading, isError } = useQuery<ReferralLinksListResponse, Error>({
 		queryKey: ["referral-links", { page: 1, limit: 1 }],
 		queryFn: () => getReferralLinks({ page: 1, limit: 1 }),
 		staleTime: 60_000,
@@ -62,6 +62,10 @@ export function ShareLinkCard() {
 
 				{isLoading ? (
 					<div className="h-9 animate-pulse rounded-lg bg-slate-800/70" />
+				) : isError ? (
+					<p className="text-xs text-amber-300/80">
+						We couldn&apos;t load your link right now — refresh to try again.
+					</p>
 				) : firstLink ? (
 					<div className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-950/60 px-3 py-2">
 						<Link2 className="h-3.5 w-3.5 shrink-0 text-slate-500" />

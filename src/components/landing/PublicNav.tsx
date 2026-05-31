@@ -37,6 +37,16 @@ export function PublicNav({ onStartEarning }: PublicNavProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Close the mobile menu on Escape for keyboard users.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   const handleStart = useCallback(() => {
