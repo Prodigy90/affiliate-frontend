@@ -51,8 +51,8 @@ export default function AffiliateDashboardPage() {
 					<div className="h-4 w-32 animate-pulse rounded bg-slate-800/70" />
 					<div className="h-7 w-64 animate-pulse rounded bg-slate-800/70" />
 				</div>
-				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-					{Array.from({ length: 4 }).map((_, i) => (
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+					{Array.from({ length: 5 }).map((_, i) => (
 						<div
 							key={i}
 							className="h-28 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60"
