@@ -8,6 +8,7 @@ import type {
   EnrollmentResponse,
   ReferralLink,
   ReferralLinksListResponse,
+  SignupListResponse,
   ValidateRefIDResponse
 } from "@/lib/types/affiliate";
 import { apiGet, apiPost } from "@/lib/api/client";
@@ -37,6 +38,15 @@ export async function getCommissions(
   _authToken?: string
 ): Promise<CommissionListResponse> {
   return apiGet<CommissionListResponse>("/commissions");
+}
+
+export async function getSignups(
+  limit = 20,
+  offset = 0
+): Promise<SignupListResponse> {
+  return apiGet<SignupListResponse>(
+    `/signups?limit=${limit}&offset=${offset}`
+  );
 }
 
 export async function getAffiliateProducts(
