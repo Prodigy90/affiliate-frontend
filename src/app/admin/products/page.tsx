@@ -7,12 +7,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Copy, Check, Key } from "lucide-react";
+import { Copy, Check, Key, Package } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { createProduct } from "@/lib/api/admin";
-import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
@@ -416,10 +416,52 @@ export default function AdminProductsPage() {
                 </p>
               </div>
             ) : (
-              <EmptyState lottieUrl={LOTTIE_EMPTY_STATE} message="There are no products yet. Once you create a product, it will appear here." />
+              <EmptyState
+                icon={Package}
+                accent="teal"
+                title="No products yet"
+                body="Create a product to start tracking referrals and paying out commissions."
+              />
             )
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              {/* Mobile: stacked cards (<sm). */}
+              <StackedCardList>
+                {products.map((p) => (
+                  <StackedCard
+                    key={p.id}
+                    title={p.name}
+                    subtitle={p.product_id}
+                    action={
+                      <Link
+                        href={`/admin/products/${p.id}`}
+                        className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:bg-slate-700"
+                      >
+                        <span>View</span>
+                      </Link>
+                    }
+                    fields={[
+                      { label: "Base rate", value: `${p.base_commission_rate}%` },
+                      {
+                        label: "Max / referral",
+                        value:
+                          p.max_commission_payments === null ? (
+                            <span className="text-teal-400">Unlimited</span>
+                          ) : (
+                            p.max_commission_payments
+                          ),
+                      },
+                      {
+                        label: "Status",
+                        value: <span className="capitalize">{p.status}</span>,
+                      },
+                    ]}
+                  />
+                ))}
+              </StackedCardList>
+
+              {/* Desktop: table (>=sm). */}
+              <div className="hidden overflow-x-auto sm:block">
               <table className="min-w-full text-left text-xs text-slate-200">
                 <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
                   <tr>
@@ -470,7 +512,8 @@ export default function AdminProductsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           )}
 
           {!isLoading && totalUnfiltered > 0 && (

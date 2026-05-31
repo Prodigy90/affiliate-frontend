@@ -6,17 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Banknote } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { getPayouts, requestPayout } from "@/lib/api/affiliate";
 import type { Payout } from "@/lib/types/affiliate";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
-import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { MIN_PAYOUT_NGN } from "@/lib/constants/payouts";
 import { PaginationBar, type PageSize } from "@/components/admin/PaginationBar";
 
@@ -206,8 +206,10 @@ export default function AffiliatePayoutsPage() {
             <TableSkeleton />
           ) : allPayouts.length === 0 ? (
             <EmptyState
-              lottieUrl={LOTTIE_EMPTY_STATE}
-              message="You haven't requested any payouts yet."
+              icon={Banknote}
+              accent="teal"
+              title="No payouts yet"
+              body="You haven't requested a payout yet. Once you have an available balance, you can cash out here."
             />
           ) : (
             <>

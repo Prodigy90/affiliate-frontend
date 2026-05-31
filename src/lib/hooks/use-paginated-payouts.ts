@@ -20,8 +20,8 @@ export type UsePaginatedAdminPayoutsParams = {
  * Fetches a single page of admin payout requests.
  *
  * Backend pagination: SUPPORTED.
- * Backend search (`q`): NOT YET SUPPORTED — the page adds client-side
- * filtering on top of the returned page for affiliate name / id matches.
+ * Backend search (`q`): SUPPORTED — ILIKE across payout id / affiliate name /
+ * email, returning the correct filtered total (no client-side filtering).
  */
 export function usePaginatedAdminPayouts({
   page,

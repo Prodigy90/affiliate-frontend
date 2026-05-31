@@ -21,8 +21,8 @@ export type UsePaginatedAdminAffiliateCommissionsParams = {
  * Per-affiliate commission history (admin view).
  *
  * Backend pagination: SUPPORTED.
- * Backend search (`q`): NOT YET SUPPORTED — currently the page does not
- * surface a search input here, but the hook is wired up for when it does.
+ * Backend search (`q`): SUPPORTED — ILIKE across transaction id / customer /
+ * product name, returning the correct filtered total.
  */
 export function usePaginatedAdminAffiliateCommissions({
   affiliateId,

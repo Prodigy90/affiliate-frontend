@@ -29,9 +29,9 @@ export type GetAdminPayoutsParams = {
   page?: number;
   limit?: number;
   /**
-   * Forwarded as `q` to the backend if it ever starts honouring search. The
-   * current /admin/payouts handler ignores unknown params, so passing this is
-   * a safe no-op until backend support lands.
+   * Free-text search forwarded as `q`. The /admin/payouts handler filters via
+   * ILIKE across payout id / affiliate name / email and returns the correct
+   * filtered total.
    */
   q?: string;
 };
@@ -97,9 +97,9 @@ export type GetAdminAffiliatesParams = {
   page?: number;
   limit?: number;
   /**
-   * Free-text search forwarded as `q`. Backend support pending — for now this
-   * is silently dropped by the handler, and the admin page applies an
-   * additional client-side filter on top of the returned rows.
+   * Free-text search forwarded as `q`. The /admin/affiliates handler filters
+   * via ILIKE across name / email / ref_id and returns the correct filtered
+   * total (no client-side filtering needed).
    */
   q?: string;
 };
@@ -146,7 +146,7 @@ export type GetAdminAffiliateCommissionsParams = {
   status?: string;
   fromDate?: string; // YYYY-MM-DD
   toDate?: string; // YYYY-MM-DD
-  /** Forwarded as `q` (backend support pending). */
+  /** Forwarded as `q` — ILIKE across transaction id / customer / product name. */
   q?: string;
 };
 
