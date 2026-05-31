@@ -1,15 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { signIn } from "@/lib/auth-client";
 
-import {
-  approvePayout,
-  getAdminPayouts,
-  rejectPayout
-} from "@/lib/api/admin";
-import type { AdminPayoutListResponse } from "@/lib/types/admin";
+import { approvePayout, rejectPayout } from "@/lib/api/admin";
+import type { AdminPayout } from "@/lib/types/admin";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { StatusBadge } from "@/components/status-badge";
@@ -17,20 +14,28 @@ import { EmptyState } from "@/components/empty-state";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
+import { SearchInput } from "@/components/admin/SearchInput";
+import {
+  PaginationBar,
+  type PageSize,
+} from "@/components/admin/PaginationBar";
+import { usePaginatedAdminPayouts } from "@/lib/hooks/use-paginated-payouts";
 
 export default function AdminPayoutsPage() {
-	  const queryClient = useQueryClient();
-	  const { isAuthenticated, role, status } = useAuthSession();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, role, status } = useAuthSession();
 
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<
-    AdminPayoutListResponse,
-    Error
-  >({
-    queryKey: ["admin-payouts"],
-    queryFn: () => getAdminPayouts({ page: 1, limit: 20 }),
-    enabled: isAuthenticated,
-    staleTime: 30_000
-  });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(50);
+  const [q, setQ] = useState("");
+
+  const { data, isLoading, isError, refetch, isFetching } =
+    usePaginatedAdminPayouts({
+      page,
+      pageSize,
+      q,
+      enabled: isAuthenticated,
+    });
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => approvePayout(id),
@@ -54,8 +59,22 @@ export default function AdminPayoutsPage() {
     }
   });
 
-  const payouts = data?.payouts ?? [];
   const pagination = data?.pagination;
+
+  const visiblePayouts = useMemo(
+    () => filterPayoutsByQuery(data?.payouts ?? [], q),
+    [data?.payouts, q],
+  );
+
+  const handleSearchChange = (next: string) => {
+    setQ(next);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (next: PageSize) => {
+    setPageSize(next);
+    setPage(1);
+  };
 
   if (status === "loading") {
     return (
@@ -107,20 +126,42 @@ export default function AdminPayoutsPage() {
       </section>
 
       <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
             Payout requests
           </p>
           <div className="flex items-center gap-2 text-[11px] text-slate-400">
-            {isFetching && <span>Refreshing…</span>}
+            {isFetching && !isLoading && <span>Refreshing…</span>}
             {isError && <RetryButton onClick={() => refetch()} />}
           </div>
         </div>
 
+        <div className="w-full sm:max-w-sm">
+          <SearchInput
+            value={q}
+            onChange={handleSearchChange}
+            placeholder="Search by affiliate name, ID, or status…"
+          />
+        </div>
+
         {isLoading ? (
-          <TableSkeleton rows={2} />
-        ) : payouts.length === 0 ? (
-          <EmptyState lottieUrl={LOTTIE_EMPTY_STATE} message="There are no payout requests yet. As affiliates request payouts, they will appear here for review." />
+          <TableSkeleton rows={4} />
+        ) : visiblePayouts.length === 0 ? (
+          q ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+              <p className="text-sm text-slate-300">
+                No payout requests match &ldquo;{q}&rdquo;.
+              </p>
+              <p className="text-xs text-slate-500">
+                Try a different search or clear the filter.
+              </p>
+            </div>
+          ) : (
+            <EmptyState
+              lottieUrl={LOTTIE_EMPTY_STATE}
+              message="There are no payout requests yet. As affiliates request payouts, they will appear here for review."
+            />
+          )
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-xs text-slate-200">
@@ -134,7 +175,7 @@ export default function AdminPayoutsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {payouts.map((payout) => (
+                {visiblePayouts.map((payout) => (
                   <tr key={payout.id} className="align-middle">
                     <td className="px-2 py-2">
                       <p className="text-xs font-medium text-slate-100">
@@ -189,18 +230,40 @@ export default function AdminPayoutsPage() {
                 ))}
               </tbody>
             </table>
-
-            {pagination && (
-              <p className="pt-3 text-[11px] text-slate-400">
-                Showing page {pagination.page} of {pagination.total_pages} ·{" "}
-                {pagination.total} payout requests
-              </p>
-            )}
           </div>
+        )}
+
+        {pagination && (
+          <PaginationBar
+            page={page}
+            pageSize={pageSize}
+            // When q is active we filter client-side over the current server
+            // page only, so the server's unfiltered total would mislead.
+            total={q ? visiblePayouts.length : pagination.total}
+            rowsOnPage={visiblePayouts.length}
+            entityLabel="payout request"
+            entityLabelPlural="payout requests"
+            onPageChange={setPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         )}
       </section>
     </div>
   );
+}
+
+function filterPayoutsByQuery(rows: AdminPayout[], q: string) {
+  if (!q) return rows;
+  const needle = q.trim().toLowerCase();
+  if (!needle) return rows;
+  return rows.filter((p) => {
+    return (
+      (p.affiliate_name ?? "").toLowerCase().includes(needle) ||
+      (p.affiliate_id ?? "").toLowerCase().includes(needle) ||
+      (p.status ?? "").toLowerCase().includes(needle) ||
+      (p.currency ?? "").toLowerCase().includes(needle)
+    );
+  });
 }
 
 function shortenId(id: string) {

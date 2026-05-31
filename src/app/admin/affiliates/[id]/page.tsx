@@ -1,18 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { signIn } from "@/lib/auth-client";
 
-import {
-  getAdminAffiliateCommissions,
-  getAdminAffiliateEarnings
-} from "@/lib/api/admin";
-import type {
-  CommissionListResponse,
-  EarningsSummary
-} from "@/lib/types/affiliate";
+import { getAdminAffiliateEarnings } from "@/lib/api/admin";
+import type { Commission, EarningsSummary } from "@/lib/types/affiliate";
 import type { PageProps } from "@/lib/types/session";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
@@ -22,10 +16,20 @@ import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
 import { PageSkeleton } from "@/components/page-skeleton";
+import { SearchInput } from "@/components/admin/SearchInput";
+import {
+  PaginationBar,
+  type PageSize,
+} from "@/components/admin/PaginationBar";
+import { usePaginatedAdminAffiliateCommissions } from "@/lib/hooks/use-paginated-affiliate-commissions";
 
 export default function AdminAffiliateDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const { isAuthenticated, role, status } = useAuthSession();
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSize>(50);
+  const [q, setQ] = useState("");
 
   const {
     data: earnings,
@@ -43,20 +47,32 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
     data: commissionsData,
     isLoading: isLoadingCommissions,
     isError: isErrorCommissions,
-    refetch: refetchCommissions
-  } = useQuery<CommissionListResponse, Error>({
-    queryKey: ["admin-affiliate-commissions", id, { page: 1, limit: 20 }],
-    queryFn: () =>
-      getAdminAffiliateCommissions(id, {
-        page: 1,
-        limit: 20
-      }),
+    refetch: refetchCommissions,
+    isFetching: isFetchingCommissions,
+  } = usePaginatedAdminAffiliateCommissions({
+    affiliateId: id,
+    page,
+    pageSize,
+    q,
     enabled: isAuthenticated,
-    staleTime: 30_000
   });
 
-  const commissions = commissionsData?.commissions ?? [];
   const pagination = commissionsData?.pagination;
+
+  const visibleCommissions = useMemo(
+    () => filterCommissionsByQuery(commissionsData?.commissions ?? [], q),
+    [commissionsData?.commissions, q],
+  );
+
+  const handleSearchChange = (next: string) => {
+    setQ(next);
+    setPage(1);
+  };
+
+  const handlePageSizeChange = (next: PageSize) => {
+    setPageSize(next);
+    setPage(1);
+  };
 
   if (status === "loading") {
     return (
@@ -152,19 +168,46 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
       </section>
 
       <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
             Commission history
           </p>
-          {isErrorCommissions && (
-            <RetryButton onClick={() => refetchCommissions()} />
-          )}
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            {isFetchingCommissions && !isLoadingCommissions && (
+              <span>Refreshing…</span>
+            )}
+            {isErrorCommissions && (
+              <RetryButton onClick={() => refetchCommissions()} />
+            )}
+          </div>
+        </div>
+
+        <div className="w-full sm:max-w-sm">
+          <SearchInput
+            value={q}
+            onChange={handleSearchChange}
+            placeholder="Search by product, plan, or status…"
+          />
         </div>
 
         {isLoadingCommissions ? (
-          <TableSkeleton rows={2} headerWidth="w-32" />
-        ) : commissions.length === 0 ? (
-          <EmptyState lottieUrl={LOTTIE_EMPTY_STATE} message="This affiliate does not have any commissions yet." />
+          <TableSkeleton rows={4} headerWidth="w-32" />
+        ) : visibleCommissions.length === 0 ? (
+          q ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+              <p className="text-sm text-slate-300">
+                No commissions match &ldquo;{q}&rdquo;.
+              </p>
+              <p className="text-xs text-slate-500">
+                Try a different search or clear the filter.
+              </p>
+            </div>
+          ) : (
+            <EmptyState
+              lottieUrl={LOTTIE_EMPTY_STATE}
+              message="This affiliate does not have any commissions yet."
+            />
+          )
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-xs text-slate-200">
@@ -178,7 +221,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {commissions.map((c) => (
+                {visibleCommissions.map((c) => (
                   <tr key={c.id} className="align-middle">
                     <td className="px-2 py-2">
                       <p className="text-xs font-medium text-slate-100">
@@ -211,18 +254,41 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
                 ))}
               </tbody>
             </table>
-
-            {pagination && (
-              <p className="pt-3 text-[11px] text-slate-400">
-                Showing page {pagination.page} of {pagination.total_pages} ·{" "}
-                {pagination.total} commissions
-              </p>
-            )}
           </div>
+        )}
+
+        {pagination && (
+          <PaginationBar
+            page={page}
+            pageSize={pageSize}
+            // When q is active we filter client-side over the current server
+            // page only, so the server's unfiltered total would mislead.
+            total={q ? visibleCommissions.length : pagination.total}
+            rowsOnPage={visibleCommissions.length}
+            entityLabel="commission"
+            entityLabelPlural="commissions"
+            onPageChange={setPage}
+            onPageSizeChange={handlePageSizeChange}
+          />
         )}
       </section>
     </div>
   );
+}
+
+function filterCommissionsByQuery(rows: Commission[], q: string) {
+  if (!q) return rows;
+  const needle = q.trim().toLowerCase();
+  if (!needle) return rows;
+  return rows.filter((c) => {
+    return (
+      (c.product?.name ?? "").toLowerCase().includes(needle) ||
+      (c.plan_name ?? "").toLowerCase().includes(needle) ||
+      (c.status ?? "").toLowerCase().includes(needle) ||
+      (c.currency ?? "").toLowerCase().includes(needle) ||
+      (c.subscription_interval ?? "").toLowerCase().includes(needle)
+    );
+  });
 }
 
 type StatCardProps = {
