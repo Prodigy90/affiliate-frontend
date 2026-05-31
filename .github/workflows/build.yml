@@ -10,6 +10,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Serialize runs per ref so rapid back-to-back merges to main don't fire
+# overlapping deploys — the k8s rollout restart rejects a second restart
+# triggered within ~1s, which previously failed a deploy (it auto-rolled back).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
 
