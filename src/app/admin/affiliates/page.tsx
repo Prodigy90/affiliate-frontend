@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
 
-import type { AdminAffiliate } from "@/lib/types/admin";
 import { formatDate } from "@/lib/utils/format";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { EmptyState } from "@/components/empty-state";
@@ -23,7 +22,20 @@ export default function AdminAffiliatesPage() {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(50);
+  // qInput is the raw, controlled input value; q is the debounced value that
+  // actually drives the query so we don't refetch on every keystroke.
+  const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
+
+  // Debounce the search input into q (~300ms) and reset to page 1 whenever the
+  // debounced term changes.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setQ(qInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [qInput]);
 
   const { data, isLoading, isError, refetch, isFetching } =
     usePaginatedAdminAffiliates({
@@ -35,17 +47,13 @@ export default function AdminAffiliatesPage() {
 
   const pagination = data?.pagination;
 
-  // Client-side narrow on top of the server page. Backend doesn't filter on q
-  // yet, so without this typing wouldn't visibly do anything until that ships.
-  const visibleAffiliates = useMemo(
-    () => filterAffiliatesByQuery(data?.affiliates ?? [], q),
-    [data?.affiliates, q],
-  );
+  // Backend now filters on q (ILIKE across name/email/ref_id) and returns the
+  // correct total, so we render the server rows directly.
+  const affiliates = data?.affiliates ?? [];
 
-  const handleSearchChange = (next: string) => {
-    setQ(next);
-    setPage(1);
-  };
+  const handleSearchChange = useCallback((next: string) => {
+    setQInput(next);
+  }, []);
 
   const handlePageSizeChange = (next: PageSize) => {
     setPageSize(next);
@@ -114,7 +122,7 @@ export default function AdminAffiliatesPage() {
 
         <div className="w-full sm:max-w-sm">
           <SearchInput
-            value={q}
+            value={qInput}
             onChange={handleSearchChange}
             placeholder="Search by name, email, or ref ID…"
           />
@@ -128,7 +136,7 @@ export default function AdminAffiliatesPage() {
               We couldn&apos;t load affiliates right now. Please try again.
             </p>
           </div>
-        ) : visibleAffiliates.length === 0 ? (
+        ) : affiliates.length === 0 ? (
           q ? (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
               <p className="text-sm text-slate-300">
@@ -156,7 +164,7 @@ export default function AdminAffiliatesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {visibleAffiliates.map((a) => (
+                {affiliates.map((a) => (
                   <tr key={a.id} className="align-middle">
                     <td className="px-2 py-2">
                       <div className="space-y-0.5">
@@ -203,11 +211,9 @@ export default function AdminAffiliatesPage() {
           <PaginationBar
             page={page}
             pageSize={pageSize}
-            // When q is active we filter client-side over the current server
-            // page only, so the server's unfiltered total would mislead. Pass
-            // the visible (filtered) count so "Showing X of Y" stays honest.
-            total={q ? visibleAffiliates.length : pagination.total}
-            rowsOnPage={visibleAffiliates.length}
+            // Backend filters on q and returns the correct filtered total.
+            total={pagination.total}
+            rowsOnPage={affiliates.length}
             entityLabel="affiliate"
             entityLabelPlural="affiliates"
             onPageChange={setPage}
@@ -217,19 +223,4 @@ export default function AdminAffiliatesPage() {
       </section>
     </div>
   );
-}
-
-function filterAffiliatesByQuery(rows: AdminAffiliate[], q: string) {
-  if (!q) return rows;
-  const needle = q.trim().toLowerCase();
-  if (!needle) return rows;
-  return rows.filter((a) => {
-    return (
-      (a.name ?? "").toLowerCase().includes(needle) ||
-      (a.email ?? "").toLowerCase().includes(needle) ||
-      (a.ref_id ?? "").toLowerCase().includes(needle) ||
-      (a.role ?? "").toLowerCase().includes(needle) ||
-      (a.status ?? "").toLowerCase().includes(needle)
-    );
-  });
 }

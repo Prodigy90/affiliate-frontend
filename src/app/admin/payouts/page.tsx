@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { signIn } from "@/lib/auth-client";
 
 import { approvePayout, rejectPayout } from "@/lib/api/admin";
-import type { AdminPayout } from "@/lib/types/admin";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { StatusBadge } from "@/components/status-badge";
@@ -27,7 +26,20 @@ export default function AdminPayoutsPage() {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(50);
+  // qInput is the raw, controlled input value; q is the debounced value that
+  // actually drives the query so we don't refetch on every keystroke.
+  const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
+
+  // Debounce the search input into q (~300ms) and reset to page 1 whenever the
+  // debounced term changes.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setQ(qInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [qInput]);
 
   const { data, isLoading, isError, refetch, isFetching } =
     usePaginatedAdminPayouts({
@@ -61,15 +73,13 @@ export default function AdminPayoutsPage() {
 
   const pagination = data?.pagination;
 
-  const visiblePayouts = useMemo(
-    () => filterPayoutsByQuery(data?.payouts ?? [], q),
-    [data?.payouts, q],
-  );
+  // Backend now filters on q (ILIKE across payout id / affiliate name / email)
+  // and returns the correct total, so we render the server rows directly.
+  const payouts = data?.payouts ?? [];
 
-  const handleSearchChange = (next: string) => {
-    setQ(next);
-    setPage(1);
-  };
+  const handleSearchChange = useCallback((next: string) => {
+    setQInput(next);
+  }, []);
 
   const handlePageSizeChange = (next: PageSize) => {
     setPageSize(next);
@@ -138,15 +148,15 @@ export default function AdminPayoutsPage() {
 
         <div className="w-full sm:max-w-sm">
           <SearchInput
-            value={q}
+            value={qInput}
             onChange={handleSearchChange}
-            placeholder="Search by affiliate name, ID, or status…"
+            placeholder="Search by affiliate name, email, or payout ID…"
           />
         </div>
 
         {isLoading ? (
           <TableSkeleton rows={4} />
-        ) : visiblePayouts.length === 0 ? (
+        ) : payouts.length === 0 ? (
           q ? (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
               <p className="text-sm text-slate-300">
@@ -175,7 +185,7 @@ export default function AdminPayoutsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {visiblePayouts.map((payout) => (
+                {payouts.map((payout) => (
                   <tr key={payout.id} className="align-middle">
                     <td className="px-2 py-2">
                       <p className="text-xs font-medium text-slate-100">
@@ -237,10 +247,9 @@ export default function AdminPayoutsPage() {
           <PaginationBar
             page={page}
             pageSize={pageSize}
-            // When q is active we filter client-side over the current server
-            // page only, so the server's unfiltered total would mislead.
-            total={q ? visiblePayouts.length : pagination.total}
-            rowsOnPage={visiblePayouts.length}
+            // Backend filters on q and returns the correct filtered total.
+            total={pagination.total}
+            rowsOnPage={payouts.length}
             entityLabel="payout request"
             entityLabelPlural="payout requests"
             onPageChange={setPage}
@@ -250,20 +259,6 @@ export default function AdminPayoutsPage() {
       </section>
     </div>
   );
-}
-
-function filterPayoutsByQuery(rows: AdminPayout[], q: string) {
-  if (!q) return rows;
-  const needle = q.trim().toLowerCase();
-  if (!needle) return rows;
-  return rows.filter((p) => {
-    return (
-      (p.affiliate_name ?? "").toLowerCase().includes(needle) ||
-      (p.affiliate_id ?? "").toLowerCase().includes(needle) ||
-      (p.status ?? "").toLowerCase().includes(needle) ||
-      (p.currency ?? "").toLowerCase().includes(needle)
-    );
-  });
 }
 
 function shortenId(id: string) {
