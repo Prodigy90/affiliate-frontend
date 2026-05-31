@@ -13,7 +13,7 @@ const TIERS: Tier[] = [
     name: "Basic",
     monthly: 8000,
     perReferral: 2400,
-    blurb: "Solo marketers picking up the trial.",
+    blurb: "Solo operators picking up the trial.",
   },
   {
     name: "Premium",
@@ -26,7 +26,7 @@ const TIERS: Tier[] = [
     name: "Pro",
     monthly: 50000,
     perReferral: 15000,
-    blurb: "Multi-account marketers and agencies.",
+    blurb: "Multi-account power users and agencies.",
   },
 ];
 
