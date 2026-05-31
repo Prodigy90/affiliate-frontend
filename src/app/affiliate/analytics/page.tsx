@@ -13,10 +13,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Banknote, ChevronRight, HandCoins, UserPlus, Users } from "lucide-react";
+import { Banknote, ChevronRight, HandCoins, Package, UserPlus, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { StatCard } from "@/components/stat-card";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import {
   getEarningsTrend,
@@ -27,7 +27,6 @@ import {
 } from "@/lib/api/analytics";
 import type { FunnelData } from "@/lib/types/analytics";
 import { formatCurrency, formatInteger } from "@/lib/utils/format";
-import { LOTTIE_ANALYTICS } from "@/lib/constants/lottie";
 
 type FunnelAccent = "teal" | "violet" | "amber" | "emerald";
 
@@ -340,9 +339,15 @@ export default function AnalyticsPage() {
             <input
               type="date"
               value={dateRange.from}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, from: e.target.value }))
-              }
+              max={dateRange.to}
+              onChange={(e) => {
+                const from = e.target.value;
+                // Keep from <= to even if a value is typed past the picker bounds.
+                setDateRange((prev) => ({
+                  from,
+                  to: prev.to && from > prev.to ? from : prev.to,
+                }));
+              }}
               className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             />
           </div>
@@ -353,9 +358,15 @@ export default function AnalyticsPage() {
             <input
               type="date"
               value={dateRange.to}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, to: e.target.value }))
-              }
+              min={dateRange.from}
+              onChange={(e) => {
+                const to = e.target.value;
+                // Keep from <= to even if a value is typed past the picker bounds.
+                setDateRange((prev) => ({
+                  from: prev.from && to < prev.from ? to : prev.from,
+                  to,
+                }));
+              }}
               className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             />
           </div>
@@ -431,8 +442,10 @@ export default function AnalyticsPage() {
             </h2>
             {!earningsTrend || earningsTrend.length === 0 ? (
               <EmptyState
-                lottieUrl={LOTTIE_ANALYTICS}
-                message="No earnings data for this period"
+                icon={HandCoins}
+                accent="teal"
+                title="No earnings yet"
+                body="There's no earnings data for this period. Try a wider date range."
               />
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -480,8 +493,10 @@ export default function AnalyticsPage() {
             <h2 className="text-xl font-bold text-white mb-6">Signups</h2>
             {!signupTrend || signupTrend.length === 0 ? (
               <EmptyState
-                lottieUrl={LOTTIE_ANALYTICS}
-                message="No signups for this period"
+                icon={UserPlus}
+                accent="teal"
+                title="No signups yet"
+                body="No referred signups in this period. Try a wider date range."
               />
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -535,8 +550,10 @@ export default function AnalyticsPage() {
             </h2>
             {!productPerformance || productPerformance.length === 0 ? (
               <EmptyState
-                lottieUrl={LOTTIE_ANALYTICS}
-                message="No product data for this period"
+                icon={Package}
+                accent="teal"
+                title="No product data"
+                body="No product performance to show for this period. Try a wider date range."
               />
             ) : (
               <ResponsiveContainer width="100%" height={300}>

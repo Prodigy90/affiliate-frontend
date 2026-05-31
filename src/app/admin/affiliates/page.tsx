@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
+import { Users } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { formatDate } from "@/lib/utils/format";
-import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
@@ -22,20 +23,10 @@ export default function AdminAffiliatesPage() {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(50);
-  // qInput is the raw, controlled input value; q is the debounced value that
-  // actually drives the query so we don't refetch on every keystroke.
-  const [qInput, setQInput] = useState("");
+  // q drives the query. SearchInput debounces internally (~300ms) before it
+  // calls onChange, so we just commit the debounced value here and reset to
+  // page 1 — no second debounce layer.
   const [q, setQ] = useState("");
-
-  // Debounce the search input into q (~300ms) and reset to page 1 whenever the
-  // debounced term changes.
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setQ(qInput);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [qInput]);
 
   const { data, isLoading, isError, refetch, isFetching } =
     usePaginatedAdminAffiliates({
@@ -52,7 +43,8 @@ export default function AdminAffiliatesPage() {
   const affiliates = data?.affiliates ?? [];
 
   const handleSearchChange = useCallback((next: string) => {
-    setQInput(next);
+    setQ(next);
+    setPage(1);
   }, []);
 
   const handlePageSizeChange = (next: PageSize) => {
@@ -122,7 +114,7 @@ export default function AdminAffiliatesPage() {
 
         <div className="w-full sm:max-w-sm">
           <SearchInput
-            value={qInput}
+            value={q}
             onChange={handleSearchChange}
             placeholder="Search by name, email, or ref ID…"
           />
@@ -148,12 +140,46 @@ export default function AdminAffiliatesPage() {
             </div>
           ) : (
             <EmptyState
-              lottieUrl={LOTTIE_EMPTY_STATE}
-              message="There are no affiliates yet. Once people sign up, they'll appear here."
+              icon={Users}
+              accent="teal"
+              title="No affiliates yet"
+              body="Once people sign up through a referral link, they'll show up here."
             />
           )
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile: stacked cards (<sm). */}
+            <StackedCardList>
+              {affiliates.map((a) => (
+                <StackedCard
+                  key={a.id}
+                  title={a.name || a.email}
+                  subtitle={a.email}
+                  action={
+                    <Link
+                      href={`/admin/affiliates/${a.id}`}
+                      className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:bg-slate-700"
+                    >
+                      <span>View</span>
+                    </Link>
+                  }
+                  fields={[
+                    {
+                      label: "Role / status",
+                      value: (
+                        <span className="capitalize">
+                          {a.role} · {a.status}
+                        </span>
+                      ),
+                    },
+                    { label: "Joined", value: formatDate(a.created_at) },
+                  ]}
+                />
+              ))}
+            </StackedCardList>
+
+            {/* Desktop: table (>=sm). */}
+            <div className="hidden overflow-x-auto sm:block">
             <table className="min-w-full text-left text-xs text-slate-200">
               <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
                 <tr>
@@ -204,7 +230,8 @@ export default function AdminAffiliatesPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
 
         {pagination && (

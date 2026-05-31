@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { Coins } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { getCommissions } from "@/lib/api/affiliate";
 import type { CommissionListResponse } from "@/lib/types/affiliate";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
 import { useAuthSession } from "@/components/auth-guard";
-import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { PaginationBar, type PageSize } from "@/components/admin/PaginationBar";
 
 export default function AffiliateCommissionsPage() {
@@ -91,11 +92,59 @@ export default function AffiliateCommissionsPage() {
           <TableSkeleton />
         ) : commissions.length === 0 ? (
           <EmptyState
-            lottieUrl={LOTTIE_EMPTY_STATE}
-            message="You don't have any commissions yet. Once referrals convert, their commissions will appear here."
+            icon={Coins}
+            accent="teal"
+            title="No commissions yet"
+            body="When your referrals convert to paying customers, your commissions show up here."
           />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile: stacked cards (<sm). */}
+            <StackedCardList>
+              {commissions.map((c) => (
+                <StackedCard
+                  key={c.id}
+                  title={c.product.name}
+                  subtitle={`#${c.transaction_id}`}
+                  fields={[
+                    {
+                      label: "Plan",
+                      value: (
+                        <span>
+                          {c.plan_name} · {c.subscription_interval}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: "Payment",
+                      value: (
+                        <span>
+                          #{c.payment_number} ·{" "}
+                          {formatCurrency(c.payment_amount, c.currency)}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: "Commission",
+                      value: (
+                        <span className="font-semibold text-teal-300">
+                          {formatCurrency(c.commission_amount, c.currency)} ·{" "}
+                          {c.commission_rate.toFixed(1)}%
+                        </span>
+                      ),
+                    },
+                    {
+                      label: "Status",
+                      value: <StatusBadge status={c.status} variant="commission" />,
+                    },
+                    { label: "Paid at", value: formatDate(c.paid_at) },
+                  ]}
+                />
+              ))}
+            </StackedCardList>
+
+            {/* Desktop: table (>=sm). */}
+            <div className="hidden overflow-x-auto sm:block">
             <table className="min-w-full text-left text-xs text-slate-200">
               <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
                 <tr>
@@ -159,6 +208,7 @@ export default function AffiliateCommissionsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
 
             {pagination && (
               <PaginationBar
@@ -179,7 +229,7 @@ export default function AffiliateCommissionsPage() {
                 }}
               />
             )}
-          </div>
+          </>
         )}
       </section>
     </div>

@@ -1,17 +1,18 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import { use, useCallback, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { Coins } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { getAdminAffiliateEarnings } from "@/lib/api/admin";
 import type { EarningsSummary } from "@/lib/types/affiliate";
 import type { PageProps } from "@/lib/types/session";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
-import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { StatusBadge } from "@/components/status-badge";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
@@ -29,20 +30,10 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(50);
-  // qInput is the raw, controlled input value; q is the debounced value that
-  // actually drives the query so we don't refetch on every keystroke.
-  const [qInput, setQInput] = useState("");
+  // q drives the query. SearchInput debounces internally (~300ms) before it
+  // calls onChange, so we just commit the debounced value here and reset to
+  // page 1 — no second debounce layer.
   const [q, setQ] = useState("");
-
-  // Debounce the search input into q (~300ms) and reset to page 1 whenever the
-  // debounced term changes.
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setQ(qInput);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [qInput]);
 
   const {
     data: earnings,
@@ -77,7 +68,8 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   const commissions = commissionsData?.commissions ?? [];
 
   const handleSearchChange = useCallback((next: string) => {
-    setQInput(next);
+    setQ(next);
+    setPage(1);
   }, []);
 
   const handlePageSizeChange = (next: PageSize) => {
@@ -195,7 +187,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
         <div className="w-full sm:max-w-sm">
           <SearchInput
-            value={qInput}
+            value={q}
             onChange={handleSearchChange}
             placeholder="Search by transaction ID, customer, or product…"
           />
@@ -215,12 +207,51 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
             </div>
           ) : (
             <EmptyState
-              lottieUrl={LOTTIE_EMPTY_STATE}
-              message="This affiliate does not have any commissions yet."
+              icon={Coins}
+              accent="teal"
+              title="No commissions yet"
+              body="This affiliate hasn't earned any commissions so far."
             />
           )
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile: stacked cards (<sm). */}
+            <StackedCardList>
+              {commissions.map((c) => (
+                <StackedCard
+                  key={c.id}
+                  title={c.product.name}
+                  subtitle={c.plan_name}
+                  fields={[
+                    {
+                      label: "Payment",
+                      value: (
+                        <span>
+                          #{c.payment_number} ·{" "}
+                          {formatCurrency(c.payment_amount, c.currency)}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: "Commission",
+                      value: (
+                        <span className="font-semibold text-teal-300">
+                          {formatCurrency(c.commission_amount, c.currency)}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: "Status",
+                      value: <StatusBadge status={c.status} variant="commission" />,
+                    },
+                    { label: "Paid at", value: formatDate(c.paid_at) },
+                  ]}
+                />
+              ))}
+            </StackedCardList>
+
+            {/* Desktop: table (>=sm). */}
+            <div className="hidden overflow-x-auto sm:block">
             <table className="min-w-full text-left text-xs text-slate-200">
               <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
                 <tr>
@@ -265,7 +296,8 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
 
         {pagination && (

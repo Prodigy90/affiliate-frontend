@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Banknote } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { approvePayout, rejectPayout } from "@/lib/api/admin";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
-import { LOTTIE_EMPTY_STATE } from "@/lib/constants/lottie";
 import { StatusBadge } from "@/components/status-badge";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
 import { useAuthSession } from "@/components/auth-guard";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { RetryButton } from "@/components/retry-button";
@@ -26,20 +27,10 @@ export default function AdminPayoutsPage() {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<PageSize>(50);
-  // qInput is the raw, controlled input value; q is the debounced value that
-  // actually drives the query so we don't refetch on every keystroke.
-  const [qInput, setQInput] = useState("");
+  // q drives the query. SearchInput debounces internally (~300ms) before it
+  // calls onChange, so we just commit the debounced value here and reset to
+  // page 1 — no second debounce layer.
   const [q, setQ] = useState("");
-
-  // Debounce the search input into q (~300ms) and reset to page 1 whenever the
-  // debounced term changes.
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setQ(qInput);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(handle);
-  }, [qInput]);
 
   const { data, isLoading, isError, refetch, isFetching } =
     usePaginatedAdminPayouts({
@@ -78,7 +69,8 @@ export default function AdminPayoutsPage() {
   const payouts = data?.payouts ?? [];
 
   const handleSearchChange = useCallback((next: string) => {
-    setQInput(next);
+    setQ(next);
+    setPage(1);
   }, []);
 
   const handlePageSizeChange = (next: PageSize) => {
@@ -148,7 +140,7 @@ export default function AdminPayoutsPage() {
 
         <div className="w-full sm:max-w-sm">
           <SearchInput
-            value={qInput}
+            value={q}
             onChange={handleSearchChange}
             placeholder="Search by affiliate name, email, or payout ID…"
           />
@@ -168,12 +160,68 @@ export default function AdminPayoutsPage() {
             </div>
           ) : (
             <EmptyState
-              lottieUrl={LOTTIE_EMPTY_STATE}
-              message="There are no payout requests yet. As affiliates request payouts, they will appear here for review."
+              icon={Banknote}
+              accent="teal"
+              title="No payout requests"
+              body="When affiliates request payouts, they'll appear here for review."
             />
           )
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile: stacked cards (<sm). */}
+            <StackedCardList>
+              {payouts.map((payout) => (
+                <StackedCard
+                  key={payout.id}
+                  title={payout.affiliate_name || shortenId(payout.affiliate_id)}
+                  subtitle={
+                    payout.affiliate_name
+                      ? shortenId(payout.affiliate_id)
+                      : payout.affiliate_id
+                  }
+                  fields={[
+                    {
+                      label: "Amount",
+                      value: (
+                        <span className="font-semibold text-teal-300">
+                          {formatCurrency(payout.amount, payout.currency)}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: "Status",
+                      value: <StatusBadge status={payout.status} variant="payout" />,
+                    },
+                    { label: "Requested", value: formatDate(payout.created_at) },
+                  ]}
+                  footer={
+                    payout.status === "pending" ? (
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={approveMutation.isPending || rejectMutation.isPending}
+                          onClick={() => approveMutation.mutate(payout.id)}
+                          className="rounded-full bg-teal-500 px-3 py-1 text-[11px] font-medium text-teal-950 disabled:cursor-not-allowed disabled:bg-teal-500/40"
+                        >
+                          Mark completed
+                        </button>
+                        <button
+                          type="button"
+                          disabled={approveMutation.isPending || rejectMutation.isPending}
+                          onClick={() => rejectMutation.mutate(payout.id)}
+                          className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 disabled:cursor-not-allowed disabled:border-slate-700/60 disabled:bg-slate-800/60"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : null
+                  }
+                />
+              ))}
+            </StackedCardList>
+
+            {/* Desktop: table (>=sm). */}
+            <div className="hidden overflow-x-auto sm:block">
             <table className="min-w-full text-left text-xs text-slate-200">
               <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
                 <tr>
@@ -240,7 +288,8 @@ export default function AdminPayoutsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
 
         {pagination && (
