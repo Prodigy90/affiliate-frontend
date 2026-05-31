@@ -23,9 +23,9 @@ export type UsePaginatedAdminAffiliatesParams = {
  * so pagination + search are correctly memoised.
  *
  * Backend pagination: SUPPORTED (page + limit).
- * Backend search (`q`): NOT YET SUPPORTED — forwarded but ignored. The page
- * combines this with client-side filtering so typing already narrows the
- * visible rows.
+ * Backend search (`q`): SUPPORTED — ILIKE across name/email/ref_id, returns the
+ * correctly filtered total. The page renders server rows directly (no client
+ * filtering), so searches match across all pages.
  */
 export function usePaginatedAdminAffiliates({
   page,
