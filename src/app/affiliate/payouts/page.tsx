@@ -8,6 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Banknote } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
+import { PageSkeleton } from "@/components/page-skeleton";
 
 import { getPayouts, requestPayout } from "@/lib/api/affiliate";
 import type { Payout } from "@/lib/types/affiliate";
@@ -115,11 +116,7 @@ export default function AffiliatePayoutsPage() {
   }
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
-        <p className="text-sm text-slate-300">Checking your session...</p>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (!isAuthenticated) {
@@ -141,7 +138,7 @@ export default function AffiliatePayoutsPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300/80">
           Payouts
         </p>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">

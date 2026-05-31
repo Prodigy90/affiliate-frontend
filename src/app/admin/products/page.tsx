@@ -9,6 +9,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Copy, Check, Key, Package } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
+import { PageSkeleton } from "@/components/page-skeleton";
 
 import { createProduct } from "@/lib/api/admin";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -154,11 +155,7 @@ export default function AdminProductsPage() {
   const watchUnlimited = watch("unlimited_commissions");
 
   if (status === "loading") {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
-        <p className="text-sm text-slate-300">Checking your session...</p>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (!isAuthenticated) {
@@ -190,7 +187,7 @@ export default function AdminProductsPage() {
   return (
     <div className="space-y-8">
 	      <section className="space-y-3">
-	        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400/80">
+	        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300/80">
 	          Admin · Products
 	        </p>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
