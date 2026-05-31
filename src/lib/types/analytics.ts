@@ -33,10 +33,19 @@ export interface FunnelData {
   earning_to_paid_rate: number;
 }
 
+export interface SignupTrendPoint {
+  period: string;
+  signup_count: number;
+}
+
 export interface EarningsTrendResponse {
   data: EarningsTrendPoint[];
 }
 
 export interface ProductPerformanceResponse {
   data: ProductPerformance[];
+}
+
+export interface SignupTrendResponse {
+  data: SignupTrendPoint[];
 }
