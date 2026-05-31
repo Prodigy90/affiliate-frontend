@@ -91,9 +91,13 @@ export function BottomTabBar() {
 	// Match against most-specific href first so /affiliate/settings doesn't
 	// claim active for /affiliate/settings/sub-route ambiguity.
 	const sorted = [...TABS].sort((a, b) => b.href.length - a.href.length);
-	const activeHref = sorted.find(
+	const matchedHref = sorted.find(
 		(t) => pathname === t.href || pathname?.startsWith(t.href + "/")
-	)?.href ?? (pathname?.startsWith("/affiliate") ? "/affiliate/settings" : undefined);
+	)?.href;
+	// "More" (settings) is the catch-all active tab for affiliate routes outside
+	// the primary set (e.g. /affiliate/analytics).
+	const activeHref =
+		matchedHref ?? (pathname?.startsWith("/affiliate") ? "/affiliate/settings" : undefined);
 
 	return (
 		<nav
