@@ -6,6 +6,8 @@ import type {
   FunnelData,
   ProductPerformance,
   ProductPerformanceResponse,
+  SignupTrendPoint,
+  SignupTrendResponse,
 } from "../types/analytics";
 
 // Note: authToken parameters removed - authentication is now handled
@@ -23,6 +25,22 @@ export async function getEarningsTrend(params: {
 
   const response = await apiGet<EarningsTrendResponse>(
     `/analytics/earnings-trend?${queryParams.toString()}`
+  );
+  return response.data;
+}
+
+export async function getSignupTrend(params: {
+  from_date?: string;
+  to_date?: string;
+  granularity?: "day" | "week" | "month";
+}): Promise<SignupTrendPoint[]> {
+  const queryParams = new URLSearchParams();
+  if (params.from_date) queryParams.append("from_date", params.from_date);
+  if (params.to_date) queryParams.append("to_date", params.to_date);
+  if (params.granularity) queryParams.append("granularity", params.granularity);
+
+  const response = await apiGet<SignupTrendResponse>(
+    `/analytics/signup-trend?${queryParams.toString()}`
   );
   return response.data;
 }
