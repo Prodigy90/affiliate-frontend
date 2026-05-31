@@ -19,6 +19,20 @@ export interface ConversionMetrics {
   total_earnings: number;
 }
 
+export interface FunnelData {
+  currency: string;
+  signups: number;
+  converted: number;
+  /** Total earning in the smallest currency unit (kobo/cents). */
+  earning: number;
+  /** Total paid out in the smallest currency unit (kobo/cents). */
+  paid: number;
+  /** Signup → converted conversion rate, as a percentage (0–100). */
+  signup_to_converted_rate: number;
+  /** Earning → paid-out rate, as a percentage (0–100). */
+  earning_to_paid_rate: number;
+}
+
 export interface EarningsTrendResponse {
   data: EarningsTrendPoint[];
 }

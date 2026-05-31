@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Banknote, Clock, TrendingUp, UserPlus, Users } from "lucide-react";
+import { Banknote, Clock, TrendingUp, UserPlus } from "lucide-react";
 
 import type { EarningsSummary } from "@/lib/types/affiliate";
 import { formatCurrency, formatInteger } from "@/lib/utils/format";
@@ -52,25 +52,16 @@ export function StatTiles({
 			accent: "sky",
 		},
 		{
-			label: "Referrals converted",
-			value: `${formatInteger(data.successful_referrals)} / ${formatInteger(
-				data.total_referrals,
-			)}`,
-			hint: "Successful out of total",
-			icon: Users,
-			accent: "violet",
-		},
-		{
 			label: "Referred signups",
 			value: signupsCount === undefined ? "—" : formatInteger(signupsCount),
 			hint: "People who joined via your link",
 			icon: UserPlus,
-			accent: "teal",
+			accent: "violet",
 		},
 	];
 
 	return (
-		<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+		<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 			{tiles.map((tile) => {
 				const palette = ACCENT[tile.accent];
 				const Icon = tile.icon;

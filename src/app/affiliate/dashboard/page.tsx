@@ -3,6 +3,10 @@
 import { signIn } from "@/lib/auth-client";
 import { ActivityFeed } from "@/components/activity-feed/ActivityFeed";
 import { StatTiles } from "@/components/affiliate/StatTiles";
+import {
+	FunnelStrip,
+	FunnelStripSkeleton,
+} from "@/components/affiliate/FunnelStrip";
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
 import { UpcomingPayoutCard } from "@/components/affiliate/UpcomingPayoutCard";
 import { TopEarnersPanel } from "@/components/affiliate/TopEarnersPanel";
@@ -51,8 +55,9 @@ export default function AffiliateDashboardPage() {
 					<div className="h-4 w-32 animate-pulse rounded bg-slate-800/70" />
 					<div className="h-7 w-64 animate-pulse rounded bg-slate-800/70" />
 				</div>
-				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-					{Array.from({ length: 5 }).map((_, i) => (
+				<FunnelStripSkeleton />
+				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+					{Array.from({ length: 4 }).map((_, i) => (
 						<div
 							key={i}
 							className="h-28 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60"
@@ -110,7 +115,10 @@ export default function AffiliateDashboardPage() {
 				</p>
 			</header>
 
-			{/* Stat tiles row */}
+			{/* Funnel strip — the headline: signups → converted → earning → paid */}
+			<FunnelStrip />
+
+			{/* Stat tiles row — supporting detail */}
 			<StatTiles data={data} signupsCount={signupsData?.total} />
 
 			{/* Activity feed (2/3) + side stack (1/3) */}
