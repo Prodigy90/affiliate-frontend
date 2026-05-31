@@ -93,7 +93,7 @@ export function BottomTabBar() {
 	const sorted = [...TABS].sort((a, b) => b.href.length - a.href.length);
 	const activeHref = sorted.find(
 		(t) => pathname === t.href || pathname?.startsWith(t.href + "/")
-	)?.href;
+	)?.href ?? (pathname?.startsWith("/affiliate") ? "/affiliate/settings" : undefined);
 
 	return (
 		<nav
