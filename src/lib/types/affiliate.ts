@@ -145,6 +145,25 @@ export type SignupListResponse = {
   signups: ReferredSignup[];
 };
 
+// Admin-facing referred-signup conversions
+// (GET /admin/affiliates/:id/signups). Unlike the affiliate-facing view, the
+// admin DTO includes trace_id (so the admin can correlate a signup back to the
+// originating click/session) and uses page/total_pages pagination consistent
+// with the admin commissions endpoint.
+export type AdminReferredSignup = ReferredSignup & {
+  trace_id?: string;
+};
+
+export type AdminSignupListResponse = {
+  signups: AdminReferredSignup[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
 // Caller's own standing on the affiliate leaderboard (GET /api/v1/leaderboard/me).
 // Privacy decision: affiliates only ever see their own rank, never a list of
 // other earners. `ranked` is false for zero-earnings affiliates.

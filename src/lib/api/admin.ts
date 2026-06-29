@@ -5,6 +5,7 @@ import type {
   AdminPayoutStatusResponse
 } from "@/lib/types/admin";
 import type {
+  AdminSignupListResponse,
   CommissionListResponse,
   EarningsSummary
 } from "@/lib/types/affiliate";
@@ -185,6 +186,38 @@ export async function getAdminAffiliateCommissions(
     : `/admin/affiliates/${id}/commissions`;
 
   return apiGet<CommissionListResponse>(path);
+}
+
+export type GetAdminAffiliateSignupsParams = {
+  page?: number;
+  limit?: number;
+};
+
+/**
+ * Per-affiliate referred-signup history (admin view). Surfaces WHO an affiliate
+ * referred (top-of-funnel conversions), not just their commissions.
+ * Backed by GET /admin/affiliates/:id/signups (page/limit pagination).
+ */
+export async function getAdminAffiliateSignups(
+  id: string,
+  params: GetAdminAffiliateSignupsParams = {},
+  _authToken?: string
+): Promise<AdminSignupListResponse> {
+  const search = new URLSearchParams();
+
+  if (params.page && params.page > 0) {
+    search.set("page", String(params.page));
+  }
+  if (params.limit && params.limit > 0) {
+    search.set("limit", String(params.limit));
+  }
+
+  const query = search.toString();
+  const path = query
+    ? `/admin/affiliates/${id}/signups?${query}`
+    : `/admin/affiliates/${id}/signups`;
+
+  return apiGet<AdminSignupListResponse>(path);
 }
 
 export async function getProducts(

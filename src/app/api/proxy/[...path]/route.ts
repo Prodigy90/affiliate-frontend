@@ -10,7 +10,7 @@ const getBackendUrl = () => {
   if (!url && process.env.NODE_ENV === 'production') {
     throw new Error('INTERNAL_API_URL environment variable is required in production');
   }
-  return url || 'http://localhost:8080/api/v1';
+  return (url || 'http://localhost:8080/api/v1').replace(/\/$/, '');
 };
 
 // Cache affiliate info by email to avoid repeated lookups

@@ -3,13 +3,18 @@
 import { use, useCallback, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Coins } from "lucide-react";
+import { Coins, UserPlus } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { getAdminAffiliateEarnings } from "@/lib/api/admin";
 import type { EarningsSummary } from "@/lib/types/affiliate";
 import type { PageProps } from "@/lib/types/session";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
+import {
+  formatCurrency,
+  formatDate,
+  formatInteger,
+  shortenId,
+} from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
@@ -23,6 +28,7 @@ import {
   type PageSize,
 } from "@/components/admin/PaginationBar";
 import { usePaginatedAdminAffiliateCommissions } from "@/lib/hooks/use-paginated-affiliate-commissions";
+import { usePaginatedAdminAffiliateSignups } from "@/lib/hooks/use-paginated-affiliate-signups";
 
 export default function AdminAffiliateDetailPage({ params }: PageProps) {
   const { id } = use(params);
@@ -34,6 +40,10 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   // calls onChange, so we just commit the debounced value here and reset to
   // page 1 — no second debounce layer.
   const [q, setQ] = useState("");
+
+  // Referred-signups pagination is independent of the commission history above.
+  const [signupsPage, setSignupsPage] = useState(1);
+  const [signupsPageSize, setSignupsPageSize] = useState<PageSize>(50);
 
   const {
     data: earnings,
@@ -67,6 +77,23 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   // name) and returns the correct total, so we render the server rows directly.
   const commissions = commissionsData?.commissions ?? [];
 
+  const {
+    data: signupsData,
+    isLoading: isLoadingSignups,
+    isError: isErrorSignups,
+    refetch: refetchSignups,
+    isFetching: isFetchingSignups,
+  } = usePaginatedAdminAffiliateSignups({
+    affiliateId: id,
+    page: signupsPage,
+    pageSize: signupsPageSize,
+    enabled: isAuthenticated,
+  });
+
+  const signupsPagination = signupsData?.pagination;
+  const signups = signupsData?.signups ?? [];
+  const signupsTotal = signupsPagination?.total ?? 0;
+
   const handleSearchChange = useCallback((next: string) => {
     setQ(next);
     setPage(1);
@@ -75,6 +102,11 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   const handlePageSizeChange = (next: PageSize) => {
     setPageSize(next);
     setPage(1);
+  };
+
+  const handleSignupsPageSizeChange = (next: PageSize) => {
+    setSignupsPageSize(next);
+    setSignupsPage(1);
   };
 
   if (status === "loading") {
@@ -151,7 +183,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
         </p>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total earned"
           value={formatCurrency(earnings.total_earnings, currency)}
@@ -163,6 +195,10 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
         <StatCard
           title="Available for payout"
           value={formatCurrency(earnings.available_for_payout, currency)}
+        />
+        <StatCard
+          title="Referred signups"
+          value={isLoadingSignups ? "…" : isErrorSignups ? "—" : formatInteger(signupsTotal)}
         />
       </section>
 
@@ -307,6 +343,98 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
             entityLabelPlural="commissions"
             onPageChange={setPage}
             onPageSizeChange={handlePageSizeChange}
+          />
+        )}
+      </section>
+
+      <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
+            Referred signups
+          </p>
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            {isFetchingSignups && !isLoadingSignups && <span>Refreshing…</span>}
+            {isErrorSignups && (
+              <RetryButton onClick={() => refetchSignups()} />
+            )}
+          </div>
+        </div>
+
+        {isLoadingSignups ? (
+          <TableSkeleton rows={4} headerWidth="w-32" />
+        ) : signups.length === 0 ? (
+          <EmptyState
+            icon={UserPlus}
+            accent="violet"
+            title="No referred signups yet"
+            body="Nobody has signed up through this affiliate's link so far."
+          />
+        ) : (
+          <>
+            {/* Mobile: stacked cards (<sm). */}
+            <StackedCardList>
+              {signups.map((s) => (
+                <StackedCard
+                  key={s.id}
+                  title={
+                    <span className="font-mono text-xs">
+                      {s.trace_id ? shortenId(s.trace_id) : shortenId(s.id)}
+                    </span>
+                  }
+                  fields={[
+                    { label: "Occurred", value: formatDate(s.occurred_at) },
+                    { label: "Tracked", value: formatDate(s.created_at) },
+                  ]}
+                />
+              ))}
+            </StackedCardList>
+
+            {/* Desktop: table (>=sm). */}
+            <div className="hidden overflow-x-auto sm:block">
+              <table className="min-w-full text-left text-xs text-slate-200">
+                <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                  <tr>
+                    <th className="px-2 py-2">Trace ID</th>
+                    <th className="px-2 py-2">Occurred</th>
+                    <th className="px-2 py-2">Tracked</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80">
+                  {signups.map((s) => (
+                    <tr key={s.id} className="align-middle">
+                      <td className="px-2 py-2">
+                        <span className="font-mono text-[11px] text-slate-300">
+                          {s.trace_id ? shortenId(s.trace_id) : shortenId(s.id)}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2">
+                        <p className="text-xs text-slate-200">
+                          {formatDate(s.occurred_at)}
+                        </p>
+                      </td>
+                      <td className="px-2 py-2">
+                        <p className="text-xs text-slate-200">
+                          {formatDate(s.created_at)}
+                        </p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {signupsPagination && signupsTotal > 0 && (
+          <PaginationBar
+            page={signupsPage}
+            pageSize={signupsPageSize}
+            total={signupsPagination.total}
+            rowsOnPage={signups.length}
+            entityLabel="signup"
+            entityLabelPlural="signups"
+            onPageChange={setSignupsPage}
+            onPageSizeChange={handleSignupsPageSizeChange}
           />
         )}
       </section>
