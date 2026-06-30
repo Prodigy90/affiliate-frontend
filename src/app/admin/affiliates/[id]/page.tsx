@@ -362,7 +362,16 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
         {isLoadingSignups ? (
           <TableSkeleton rows={4} headerWidth="w-32" />
-        ) : signups.length === 0 ? (
+        ) : isErrorSignups ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+            <p className="text-sm text-slate-300">
+              Couldn&apos;t load referred signups.
+            </p>
+            <p className="text-xs text-slate-500">
+              Use Retry above to try again.
+            </p>
+          </div>
+        ) : signupsTotal === 0 ? (
           <EmptyState
             icon={UserPlus}
             accent="violet"
