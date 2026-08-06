@@ -43,3 +43,36 @@ export type AdminAffiliateListResponse = {
     total_pages: number;
   };
 };
+
+/**
+ * Per-(affiliate, product) commission override. All rate/config fields are
+ * nullable — null means "no override for this field, fall back to the
+ * product's default commission config."
+ */
+export type AffiliateCustomRate = {
+  product_id: string;
+  product_name: string;
+  custom_rate: number | null;
+  custom_max_payments: number | null;
+  custom_recurring_rate: number | null;
+  custom_one_time_rate: number | null;
+  custom_lifetime_enabled: boolean | null;
+  custom_lifetime_rate: number | null;
+  notes: string | null;
+  updated_at: string;
+};
+
+export type AffiliateCustomRateListResponse = {
+  data: AffiliateCustomRate[];
+};
+
+/** Body for PUT /admin/affiliates/:id/custom-rates/:productId. */
+export type UpdateAffiliateCustomRateRequest = {
+  custom_rate?: number | null;
+  custom_max_payments?: number | null;
+  custom_recurring_rate?: number | null;
+  custom_one_time_rate?: number | null;
+  custom_lifetime_enabled?: boolean | null;
+  custom_lifetime_rate?: number | null;
+  notes?: string | null;
+};

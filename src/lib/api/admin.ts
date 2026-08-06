@@ -1,8 +1,11 @@
-import { apiGet, apiPost, apiPut } from "@/lib/api/client";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api/client";
 import type {
   AdminAffiliateListResponse,
   AdminPayoutListResponse,
-  AdminPayoutStatusResponse
+  AdminPayoutStatusResponse,
+  AffiliateCustomRate,
+  AffiliateCustomRateListResponse,
+  UpdateAffiliateCustomRateRequest
 } from "@/lib/types/admin";
 import type {
   AdminSignupListResponse,
@@ -218,6 +221,41 @@ export async function getAdminAffiliateSignups(
     : `/admin/affiliates/${id}/signups`;
 
   return apiGet<AdminSignupListResponse>(path);
+}
+
+/**
+ * Per-affiliate commission overrides (admin view). Rows are keyed by
+ * product_id; a product with no override simply won't appear in `data`.
+ */
+export async function getAffiliateCustomRates(
+  affiliateId: string,
+  _authToken?: string
+): Promise<AffiliateCustomRateListResponse> {
+  return apiGet<AffiliateCustomRateListResponse>(
+    `/admin/affiliates/${affiliateId}/custom-rates`
+  );
+}
+
+export async function updateAffiliateCustomRate(
+  affiliateId: string,
+  productId: string,
+  payload: UpdateAffiliateCustomRateRequest,
+  _authToken?: string
+): Promise<AffiliateCustomRate> {
+  return apiPut<UpdateAffiliateCustomRateRequest, AffiliateCustomRate>(
+    `/admin/affiliates/${affiliateId}/custom-rates/${productId}`,
+    payload
+  );
+}
+
+export async function deleteAffiliateCustomRate(
+  affiliateId: string,
+  productId: string,
+  _authToken?: string
+): Promise<void> {
+  return apiDelete<void>(
+    `/admin/affiliates/${affiliateId}/custom-rates/${productId}`
+  );
 }
 
 export async function getProducts(

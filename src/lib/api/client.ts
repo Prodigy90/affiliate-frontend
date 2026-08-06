@@ -58,7 +58,18 @@ async function request<T>(path: string, options: RequestOptions): Promise<T> {
     throw new Error(message);
   }
 
-  return (await res.json()) as T;
+  // 204 No Content (and any other empty body) has nothing to parse — most
+  // callers pass T = void here (e.g. apiDelete), so return undefined.
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
+  const text = await res.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 // Note: authToken parameters are kept for backwards compatibility but ignored
