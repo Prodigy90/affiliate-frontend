@@ -18,6 +18,8 @@ import {
   type PageSize,
 } from "@/components/admin/PaginationBar";
 import { usePaginatedAdminAffiliates } from "@/lib/hooks/use-paginated-affiliates";
+import { CustomCommissionModal } from "@/components/admin/CustomCommissionModal";
+import type { AdminAffiliate } from "@/lib/types/admin";
 
 export default function AdminAffiliatesPage() {
   const { isAuthenticated, role, status } = useAuthSession();
@@ -28,6 +30,9 @@ export default function AdminAffiliatesPage() {
   // calls onChange, so we just commit the debounced value here and reset to
   // page 1 — no second debounce layer.
   const [q, setQ] = useState("");
+
+  // Affiliate currently open in the "Custom commission" modal, if any.
+  const [customRateAffiliate, setCustomRateAffiliate] = useState<AdminAffiliate | null>(null);
 
   const { data, isLoading, isError, refetch, isFetching } =
     usePaginatedAdminAffiliates({
@@ -171,6 +176,15 @@ export default function AdminAffiliatesPage() {
                     },
                     { label: "Joined", value: formatDate(a.created_at) },
                   ]}
+                  footer={
+                    <button
+                      type="button"
+                      onClick={() => setCustomRateAffiliate(a)}
+                      className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:bg-slate-700"
+                    >
+                      <span>Custom commission</span>
+                    </button>
+                  }
                 />
               ))}
             </StackedCardList>
@@ -214,7 +228,14 @@ export default function AdminAffiliatesPage() {
                       )}
                     </td>
                     <td className="px-2 py-2">
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setCustomRateAffiliate(a)}
+                          className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:bg-slate-700"
+                        >
+                          <span>Custom commission</span>
+                        </button>
                         <Link
                           href={`/admin/affiliates/${a.id}`}
                           className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:bg-slate-700"
@@ -245,6 +266,13 @@ export default function AdminAffiliatesPage() {
           />
         )}
       </section>
+
+      {customRateAffiliate && (
+        <CustomCommissionModal
+          affiliate={customRateAffiliate}
+          onClose={() => setCustomRateAffiliate(null)}
+        />
+      )}
     </div>
   );
 }
