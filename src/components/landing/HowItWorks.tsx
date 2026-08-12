@@ -25,7 +25,7 @@ const STEPS: Step[] = [
   {
     index: "4",
     title: "Get paid every renewal",
-    outcome: "10% on month 1, month 2, month 3. Paid to your bank, no chasing required.",
+    outcome: "10% of every renewal for 12 months. Paid to your bank, no chasing required.",
   },
 ];
 

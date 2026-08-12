@@ -12,6 +12,7 @@ const navItems: NavigationItem[] = [
 	{ href: "/affiliate/products", label: "Products" },
 	{ href: "/affiliate/payouts", label: "Payouts" },
 	{ href: "/affiliate/analytics", label: "Analytics" },
+	{ href: "/affiliate/assets", label: "Promo Kit" },
 	{ href: "/affiliate/settings", label: "Settings" },
 ];
 
