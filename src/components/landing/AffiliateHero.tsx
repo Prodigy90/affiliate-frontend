@@ -22,13 +22,13 @@ export function AffiliateHero({ onPrimaryCta }: AffiliateHeroProps) {
 
           <h1 className="mb-6 text-balance text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
             Share what you already love about WASBOT.{" "}
-            <span className="text-teal-400">Get paid three months running.</span>
+            <span className="text-teal-400">Get paid twelve months running.</span>
           </h1>
 
           <p className="mx-auto mb-10 max-w-3xl text-pretty text-base leading-relaxed text-slate-400 sm:text-lg md:text-xl">
             Drop your link where your people already are — status, groups, your YouTube
-            description. Every sign-up earns you 10% on month 1, month 2 and month 3. No
-            cap on how many you bring.
+            description. Every sign-up earns you 10% of every renewal for their first
+            12 months. No cap on how many you bring.
           </p>
 
           <div className="mb-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
@@ -77,7 +77,7 @@ export function AffiliateHero({ onPrimaryCta }: AffiliateHeroProps) {
           </div>
 
           <p className="text-xs text-slate-500 sm:text-sm">
-            Free to join &middot; 10% on every renewal &middot; Three months per referral
+            Free to join &middot; 10% on every renewal &middot; Twelve months per referral
           </p>
         </div>
       </div>

@@ -12,20 +12,20 @@ const TIERS: Tier[] = [
   {
     name: "Basic",
     monthly: 8000,
-    perReferral: 2400,
+    perReferral: 9600,
     blurb: "Solo operators picking up the trial.",
   },
   {
     name: "Premium",
     monthly: 20000,
-    perReferral: 6000,
+    perReferral: 24000,
     blurb: "The plan most of your audience lands on.",
     popular: true,
   },
   {
     name: "Pro",
     monthly: 50000,
-    perReferral: 15000,
+    perReferral: 60000,
     blurb: "Multi-account power users and agencies.",
   },
 ];
@@ -44,10 +44,10 @@ export function CommissionMath() {
             What you actually take home
           </p>
           <h2 className="mb-4 text-2xl font-bold tracking-tight text-white md:text-3xl">
-            One referral on Premium. Six grand, three months running.
+            One referral on Premium. Twenty-four grand over their first year.
           </h2>
           <p className="mx-auto max-w-2xl text-base text-slate-400 md:text-lg">
-            10% of every paid month, for the first three months they stay. No clawbacks, no
+            10% of every paid month, for the first twelve months they stay. No clawbacks, no
             cap on how many people you send. Send 10, send 100 — every renewal pays you again.
           </p>
         </div>
@@ -85,7 +85,7 @@ export function CommissionMath() {
                   <span className="text-slate-600">x</span>
                   <span>{formatNaira(tier.monthly)}</span>
                   <span className="text-slate-600">x</span>
-                  <span>3 mo</span>
+                  <span>12 mo</span>
                 </div>
                 <div className="mt-3 border-t border-slate-800/70 pt-3 text-right">
                   <span className="text-base font-bold text-teal-300 md:text-lg">

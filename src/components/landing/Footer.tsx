@@ -35,7 +35,7 @@ export function Footer() {
             </div>
             <p className="max-w-xs text-sm leading-relaxed text-slate-400">
               Share what you already love about WASBOT. Get paid 10% on every renewal for the
-              first three months.
+              first twelve months.
             </p>
           </div>
 

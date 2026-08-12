@@ -56,7 +56,7 @@ export function ShareLinkCard() {
 					</h3>
 					<p className="mt-1 text-xs text-slate-400">
 						Drop it in your status, your group, your bio. Every signup that
-						lands here pays out for 3 monthly cycles.
+						lands here pays out for 12 monthly cycles.
 					</p>
 				</div>
 
