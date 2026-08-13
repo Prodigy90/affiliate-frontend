@@ -8,7 +8,7 @@ import { PageSkeleton } from "@/components/page-skeleton";
 
 import { getCommissions } from "@/lib/api/affiliate";
 import type { Commission, CommissionListResponse } from "@/lib/types/affiliate";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
+import { formatDate, formatNaira } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -30,8 +30,8 @@ function CommissionRow({ c }: { c: Commission }) {
 					</p>
 				</div>
 				<div className="shrink-0 text-right">
-					<p className="text-xs font-semibold tabular-nums text-teal-300">
-						{formatCurrency(c.commission_amount, c.currency)}
+					<p className="font-mono text-xs font-semibold tabular-nums text-teal-300">
+						+{formatNaira(c.commission_amount, c.currency)}
 					</p>
 					<p className="text-[11px] text-slate-500">
 						{c.commission_rate.toFixed(1)}% rate
@@ -41,7 +41,9 @@ function CommissionRow({ c }: { c: Commission }) {
 			<div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
 				<p className="min-w-0 truncate text-[11px] text-slate-500">
 					Payment {c.payment_number} ·{" "}
-					{formatCurrency(c.payment_amount, c.currency)}
+					<span className="font-mono tabular-nums">
+						{formatNaira(c.payment_amount, c.currency)}
+					</span>
 					<span className="hidden sm:inline"> · {formatDate(c.paid_at)}</span>
 				</p>
 				<StatusBadge status={c.status} variant="commission" />

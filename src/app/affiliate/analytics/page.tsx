@@ -27,7 +27,7 @@ import {
   getSignupTrend,
 } from "@/lib/api/analytics";
 import type { FunnelData } from "@/lib/types/analytics";
-import { formatCurrency, formatInteger } from "@/lib/utils/format";
+import { formatInteger, formatNaira } from "@/lib/utils/format";
 
 type FunnelAccent = "teal" | "violet" | "amber" | "emerald";
 
@@ -147,7 +147,7 @@ function RangedFunnel({ funnel }: { funnel: FunnelData }) {
     },
     {
       label: "Earning",
-      value: formatCurrency(funnel.earning, currency),
+      value: formatNaira(funnel.earning, currency),
       caption: "Commission credited",
       icon: HandCoins,
       accent: "amber",
@@ -155,7 +155,7 @@ function RangedFunnel({ funnel }: { funnel: FunnelData }) {
     },
     {
       label: "Paid",
-      value: formatCurrency(funnel.paid, currency),
+      value: formatNaira(funnel.paid, currency),
       caption: "Cashed out to you",
       icon: Banknote,
       accent: "emerald",

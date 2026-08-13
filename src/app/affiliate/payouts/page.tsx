@@ -12,7 +12,7 @@ import { PageSkeleton } from "@/components/page-skeleton";
 
 import { getPayouts, requestPayout } from "@/lib/api/affiliate";
 import type { Payout } from "@/lib/types/affiliate";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
+import { formatDate, formatNaira } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -98,7 +98,7 @@ export default function AffiliatePayoutsPage() {
       const amountInKobo = values.amount * 100;
       const res = await requestPayout(amountInKobo);
       toast.success(
-        `Payout requested for ${formatCurrency(
+        `Payout requested for ${formatNaira(
           res.amount ?? amountInKobo,
           currency,
         )}.`,
@@ -153,8 +153,8 @@ export default function AffiliatePayoutsPage() {
       <section className="grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)] items-start">
         <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
           <SectionHeader label="Balance" title="Available for payout" />
-          <p className="text-xl font-semibold tabular-nums text-teal-300">
-            {earningsLoading ? "Loading..." : formatCurrency(availableKobo, currency)}
+          <p className="font-mono text-xl font-semibold tabular-nums text-teal-300">
+            {earningsLoading ? "Loading..." : formatNaira(availableKobo, currency)}
           </p>
           <form
             className="space-y-3 pt-2"
@@ -214,8 +214,8 @@ export default function AffiliatePayoutsPage() {
                     className="flex items-center justify-between gap-3 px-4 py-2.5"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium tabular-nums text-slate-100">
-                        {formatCurrency(payout.amount, payout.currency)}
+                      <p className="truncate font-mono text-sm font-medium tabular-nums text-slate-100">
+                        {formatNaira(payout.amount, payout.currency)}
                       </p>
                       <p className="text-[11px] text-slate-500">
                         Requested on {formatDate(payout.created_at)}
