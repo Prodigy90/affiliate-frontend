@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Clock, Copy, Download, HardDrive, MessageCircle, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,6 +8,10 @@ import { toast } from "sonner";
 import { signIn } from "@/lib/auth-client";
 import { PageSkeleton } from "@/components/page-skeleton";
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
+import {
+	KIT_VISITED_KEY,
+	POSTED_KEY,
+} from "@/components/affiliate/PromoterLaunchpad";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { getReferralLinks } from "@/lib/api/affiliate";
 import type { ReferralLinksListResponse } from "@/lib/types/affiliate";
@@ -146,7 +150,15 @@ const buildCaptions = (link: string) => [
 	},
 ];
 
-function CopyButton({ text, small }: { text: string; small?: boolean }) {
+function CopyButton({
+	text,
+	small,
+	onCopied,
+}: {
+	text: string;
+	small?: boolean;
+	onCopied?: () => void;
+}) {
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async () => {
@@ -154,6 +166,7 @@ function CopyButton({ text, small }: { text: string; small?: boolean }) {
 			await navigator.clipboard.writeText(text);
 			setCopied(true);
 			toast.success("Copied");
+			onCopied?.();
 			setTimeout(() => setCopied(false), 2000);
 		} catch {
 			toast.error("Couldn't copy");
@@ -266,6 +279,25 @@ export default function PromoKitPage() {
 	const referralLink = data?.links?.[0]?.link_url ?? FALLBACK_LINK;
 	const captions = buildCaptions(referralLink);
 
+	// Launchpad progress: visiting the kit checks step 2; copying a caption
+	// checks step 3 (see PromoterLaunchpad on the dashboard).
+	useEffect(() => {
+		if (!isAuthenticated) return;
+		try {
+			window.localStorage.setItem(KIT_VISITED_KEY, "true");
+		} catch {
+			// ignore
+		}
+	}, [isAuthenticated]);
+
+	const markPosted = () => {
+		try {
+			window.localStorage.setItem(POSTED_KEY, "true");
+		} catch {
+			// ignore
+		}
+	};
+
 	if (authLoading) {
 		return <PageSkeleton />;
 	}
@@ -307,7 +339,7 @@ export default function PromoKitPage() {
 				</p>
 			</div>
 
-			<div className="grid gap-4 lg:grid-cols-2">
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 				<ShareLinkCard />
 				<div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-5">
 					<div className="flex items-center gap-2">
@@ -337,7 +369,7 @@ export default function PromoKitPage() {
 						like you.
 					</p>
 				</div>
-				<div className="grid gap-3 md:grid-cols-3">
+				<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
 					{captions.map((caption) => (
 						<div
 							key={caption.label}
@@ -353,7 +385,7 @@ export default function PromoKitPage() {
 								{caption.text}
 							</p>
 							<div className="flex justify-end">
-								<CopyButton text={caption.text} small />
+								<CopyButton text={caption.text} small onCopied={markPosted} />
 							</div>
 						</div>
 					))}
@@ -369,7 +401,7 @@ export default function PromoKitPage() {
 						</h2>
 						<p className="text-xs text-slate-400">{section.sub}</p>
 					</div>
-					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						{section.videos.map((video) => (
 							<VideoCard key={video.file} video={video} />
 						))}

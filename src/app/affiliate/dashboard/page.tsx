@@ -11,6 +11,7 @@ import {
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
 import { UpcomingPayoutCard } from "@/components/affiliate/UpcomingPayoutCard";
 import { TopEarnersPanel } from "@/components/affiliate/TopEarnersPanel";
+import { PromoterLaunchpad } from "@/components/affiliate/PromoterLaunchpad";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useSignups } from "@/lib/hooks/use-signups";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
@@ -53,7 +54,7 @@ export default function AffiliateDashboardPage() {
 					<div className="h-7 w-64 animate-pulse rounded bg-slate-800/70" />
 				</div>
 				<FunnelStripSkeleton />
-				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 					{Array.from({ length: 4 }).map((_, i) => (
 						<div
 							key={i}
@@ -61,7 +62,7 @@ export default function AffiliateDashboardPage() {
 						/>
 					))}
 				</div>
-				<div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+				<div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
 					<div className="h-72 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60" />
 					<div className="space-y-3">
 						<div className="h-40 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60" />
@@ -112,6 +113,9 @@ export default function AffiliateDashboardPage() {
 				</p>
 			</header>
 
+			{/* Onboarding launchpad — the "start promoting" prompt for new affiliates */}
+			<PromoterLaunchpad />
+
 			{/* Funnel strip — the headline: signups → converted → earning → paid */}
 			<FunnelStrip />
 
@@ -119,9 +123,11 @@ export default function AffiliateDashboardPage() {
 			<StatTiles data={data} signupsCount={signupsData?.total} />
 
 			{/* Activity feed (2/3) + side stack (1/3) */}
-			<div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-				<ActivityFeed />
-				<div className="grid gap-3">
+			<div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+				<div className="min-w-0">
+					<ActivityFeed />
+				</div>
+				<div className="grid min-w-0 grid-cols-1 gap-3">
 					<ShareLinkCard />
 					<UpcomingPayoutCard data={data} />
 				</div>

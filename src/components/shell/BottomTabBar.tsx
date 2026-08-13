@@ -31,22 +31,23 @@ function HomeIcon(p: IconProps) {
 	);
 }
 
+function PromoKitIcon(p: IconProps) {
+	return (
+		<svg {...svgProps(p)} aria-hidden="true">
+			<rect x="3" y="5" width="18" height="14" rx="2.5" />
+			<path d="M3 9h18" />
+			<path d="m7 5 2 4M12 5l2 4M17 5l2 4" />
+			<path d="m10.5 13.5 3.5 2-3.5 2v-4Z" />
+		</svg>
+	);
+}
+
 function CommissionsIcon(p: IconProps) {
 	return (
 		<svg {...svgProps(p)} aria-hidden="true">
 			<circle cx="12" cy="12" r="8" />
 			<path d="M15 9.5c-.6-.9-1.7-1.5-3-1.5-1.7 0-3 1-3 2.2 0 2.6 6 1.5 6 4 0 1.3-1.3 2.3-3 2.3-1.5 0-2.7-.7-3.2-1.7" />
 			<path d="M12 6v2M12 16v2" />
-		</svg>
-	);
-}
-
-function ProductsIcon(p: IconProps) {
-	return (
-		<svg {...svgProps(p)} aria-hidden="true">
-			<path d="M4 7 12 3l8 4-8 4-8-4Z" />
-			<path d="M4 11 12 15l8-4" />
-			<path d="M4 15 12 19l8-4" />
 		</svg>
 	);
 }
@@ -61,12 +62,10 @@ function PayoutsIcon(p: IconProps) {
 	);
 }
 
-function MoreIcon(p: IconProps) {
+function AnalyticsIcon(p: IconProps) {
 	return (
 		<svg {...svgProps(p)} aria-hidden="true">
-			<circle cx="6" cy="12" r="1.5" />
-			<circle cx="12" cy="12" r="1.5" />
-			<circle cx="18" cy="12" r="1.5" />
+			<path d="M4 20V10M10 20V4M16 20v-8M21 20H3" />
 		</svg>
 	);
 }
@@ -79,30 +78,27 @@ interface Tab {
 
 const TABS: Tab[] = [
 	{ label: "Home", href: "/affiliate/dashboard", Icon: HomeIcon },
+	{ label: "Promo Kit", href: "/affiliate/assets", Icon: PromoKitIcon },
 	{ label: "Commissions", href: "/affiliate/commissions", Icon: CommissionsIcon },
-	{ label: "Products", href: "/affiliate/products", Icon: ProductsIcon },
 	{ label: "Payouts", href: "/affiliate/payouts", Icon: PayoutsIcon },
-	{ label: "More", href: "/affiliate/settings", Icon: MoreIcon },
+	{ label: "Analytics", href: "/affiliate/analytics", Icon: AnalyticsIcon },
 ];
 
 export function BottomTabBar() {
 	const pathname = usePathname();
 
-	// Match against most-specific href first so /affiliate/settings doesn't
-	// claim active for /affiliate/settings/sub-route ambiguity.
+	// Match against most-specific href first. Routes outside the primary set
+	// (settings, products) simply show no active tab — same behavior as
+	// wasbot-frontend's /billing.
 	const sorted = [...TABS].sort((a, b) => b.href.length - a.href.length);
-	const matchedHref = sorted.find(
+	const activeHref = sorted.find(
 		(t) => pathname === t.href || pathname?.startsWith(t.href + "/")
 	)?.href;
-	// "More" (settings) is the catch-all active tab for affiliate routes outside
-	// the primary set (e.g. /affiliate/analytics).
-	const activeHref =
-		matchedHref ?? (pathname?.startsWith("/affiliate") ? "/affiliate/settings" : undefined);
 
 	return (
 		<nav
 			aria-label="Primary mobile"
-			className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-800/80 bg-[rgba(2,6,23,0.97)] backdrop-blur-xl"
+			className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-800/80 bg-[rgba(2,6,23,0.97)] backdrop-blur-xl"
 		>
 			<ul
 				className="flex items-stretch justify-around px-1 pt-1.5"
@@ -112,7 +108,7 @@ export function BottomTabBar() {
 					const active = activeHref === tab.href;
 					const { Icon } = tab;
 					return (
-						<li key={tab.href} className="flex-1">
+						<li key={tab.href} className="min-w-0 flex-1">
 							<Link
 								href={tab.href}
 								aria-current={active ? "page" : undefined}
@@ -122,7 +118,7 @@ export function BottomTabBar() {
 							>
 								<Icon size={22} w={active ? 2.2 : 1.6} />
 								<span
-									className={`text-[10px] leading-none tracking-tight transition-opacity ${
+									className={`max-w-full truncate text-[10px] leading-none tracking-tight transition-opacity ${
 										active ? "font-semibold opacity-100" : "font-medium opacity-70"
 									}`}
 								>

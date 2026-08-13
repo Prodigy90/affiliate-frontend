@@ -61,7 +61,7 @@ export function StatTiles({
 	];
 
 	return (
-		<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+		<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 			{tiles.map((tile) => {
 				const palette = ACCENT[tile.accent];
 				const Icon = tile.icon;
