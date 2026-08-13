@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Check,
 	Clock,
@@ -495,6 +495,20 @@ function PreviewModal({ video, onClose }: { video: PromoVideo; onClose: () => vo
 	const src = `${VIDEO_BASE}/${video.file}.mp4`;
 	const poster = `${VIDEO_BASE}/posters/${video.file}.jpg`;
 
+	// Escape closes; page scroll is locked while the lightbox is open.
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") onClose();
+		};
+		document.addEventListener("keydown", onKey);
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		return () => {
+			document.removeEventListener("keydown", onKey);
+			document.body.style.overflow = previousOverflow;
+		};
+	}, [onClose]);
+
 	return (
 		<div
 			role="dialog"
@@ -682,7 +696,15 @@ export default function PromoKitPage() {
 						)}
 
 						{(restWinners.length > 0 || nonWinners.length > 0) && (
-							<div className="divide-y divide-slate-800/50 rounded-xl border border-slate-800/70 bg-slate-900/60">
+							<div
+								className={cn(
+									"divide-y divide-slate-800/50 rounded-xl border border-slate-800/70 bg-slate-900/60",
+									// Winners 2-3 render here as mobile-only rows; when they
+									// are the ONLY children, the card would be an empty strip
+									// on desktop — hide it there.
+									nonWinners.length === 0 && "sm:hidden",
+								)}
+							>
 								{restWinners.map((v) => (
 									<VideoRow key={v.file} video={v} mobileOnly onPreview={setPreviewVideo} />
 								))}
