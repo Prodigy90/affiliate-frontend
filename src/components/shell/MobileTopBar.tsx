@@ -17,7 +17,7 @@ export function MobileTopBar() {
 				<Link href="/affiliate/dashboard" className="flex min-w-0 items-center gap-2">
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
-						src="/wasbot-icon.svg"
+						src="/wasbot-white.svg"
 						alt="WASBOT logo"
 						width={28}
 						height={28}

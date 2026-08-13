@@ -56,7 +56,7 @@ export function DockNav({ items }: { items: NavigationItem[] }) {
 				>
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
-						src="/wasbot-icon.svg"
+						src="/wasbot-white.svg"
 						alt="WASBOT logo"
 						width={28}
 						height={28}

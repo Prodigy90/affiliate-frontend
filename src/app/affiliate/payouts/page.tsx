@@ -15,6 +15,7 @@ import type { Payout } from "@/lib/types/affiliate";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { TableSkeleton } from "@/components/table-skeleton";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
@@ -151,10 +152,8 @@ export default function AffiliatePayoutsPage() {
       </section>
       <section className="grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)] items-start">
         <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-            Available for payout
-          </p>
-          <p className="text-xl font-semibold text-slate-50">
+          <SectionHeader label="Balance" title="Available for payout" />
+          <p className="text-xl font-semibold tabular-nums text-teal-300">
             {earningsLoading ? "Loading..." : formatCurrency(availableKobo, currency)}
           </p>
           <form
@@ -193,14 +192,12 @@ export default function AffiliatePayoutsPage() {
             )}
           </form>
         </div>
-        <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-              Payout history
-            </p>
-          </div>
+        <div className="space-y-4">
+          <SectionHeader label="History" title="Payout history" />
           {payoutsLoading ? (
-            <TableSkeleton />
+            <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+              <TableSkeleton />
+            </div>
           ) : allPayouts.length === 0 ? (
             <EmptyState
               icon={Banknote}
@@ -210,17 +207,17 @@ export default function AffiliatePayoutsPage() {
             />
           ) : (
             <>
-              <ul className="divide-y divide-slate-800/80 text-xs">
+              <ul className="divide-y divide-slate-800/50 rounded-xl border border-slate-800/70 bg-slate-900/60">
                 {visiblePayouts.map((payout) => (
                   <li
                     key={payout.id}
-                    className="flex items-center justify-between gap-3 py-2"
+                    className="flex items-center justify-between gap-3 px-4 py-2.5"
                   >
-                    <div className="space-y-0.5">
-                      <p className="font-medium text-slate-100">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium tabular-nums text-slate-100">
                         {formatCurrency(payout.amount, payout.currency)}
                       </p>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-slate-500">
                         Requested on {formatDate(payout.created_at)}
                       </p>
                     </div>
