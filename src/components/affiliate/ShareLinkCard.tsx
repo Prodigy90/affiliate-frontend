@@ -67,9 +67,9 @@ export function ShareLinkCard() {
 						We couldn&apos;t load your link right now — refresh to try again.
 					</p>
 				) : firstLink ? (
-					<div className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-950/60 px-3 py-2">
+					<div className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-950/60 px-3 py-2">
 						<Link2 className="h-3.5 w-3.5 shrink-0 text-slate-500" />
-						<p className="truncate font-mono text-xs text-teal-300">
+						<p className="min-w-0 flex-1 truncate font-mono text-xs text-teal-300">
 							{firstLink.link_url}
 						</p>
 					</div>

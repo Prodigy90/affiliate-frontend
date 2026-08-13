@@ -48,16 +48,48 @@ export default function AffiliateProductsPage() {
 
 	const enrollMutation = useMutation({
 		mutationFn: (productId: string) => enrollInProduct(productId),
-		onSuccess: async () => {
-			toast.success("You are now enrolled in this product.");
-			await queryClient.invalidateQueries({ queryKey: ["affiliate-products"] });
-			await queryClient.invalidateQueries({ queryKey: ["referral-links"] });
+		// Optimistic: flip the card to "Enrolled" immediately, roll back on error.
+		onMutate: async (productId: string) => {
+			await queryClient.cancelQueries({ queryKey: ["affiliate-products"] });
+			const previous = queryClient.getQueryData<AffiliateProductsResponse>([
+				"affiliate-products",
+			]);
+			if (previous) {
+				queryClient.setQueryData<AffiliateProductsResponse>(
+					["affiliate-products"],
+					{
+						...previous,
+						products: previous.products.map((p) =>
+							p.id === productId && !p.enrollment
+								? {
+										...p,
+										enrollment: {
+											...(p.enrollment ?? {}),
+											enrolled_at: new Date().toISOString(),
+										} as NonNullable<typeof p.enrollment>,
+									}
+								: p,
+						),
+					},
+				);
+			}
+			return { previous };
 		},
-		onError: (err: unknown) => {
+		onError: (err: unknown, _productId, context) => {
+			if (context?.previous) {
+				queryClient.setQueryData(["affiliate-products"], context.previous);
+			}
 			const message =
 				(err instanceof Error && err.message) ||
 				"Unable to enroll in this product. Please try again.";
 			toast.error(message);
+		},
+		onSuccess: () => {
+			toast.success("You're in. Your referral link is on its way.");
+		},
+		onSettled: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["affiliate-products"] });
+			await queryClient.invalidateQueries({ queryKey: ["referral-links"] });
 		},
 	});
 
@@ -110,7 +142,7 @@ export default function AffiliateProductsPage() {
 				)}
 
 				{productsLoading ? (
-					<div className="grid gap-4 md:grid-cols-2">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						{Array.from({ length: 3 }).map((_, idx) => (
 							<div
 								key={idx}
@@ -123,7 +155,7 @@ export default function AffiliateProductsPage() {
 						No affiliate products are available yet. Check back later.
 					</p>
 				) : (
-					<div className="grid gap-4 md:grid-cols-2">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						{products.map((product) => {
 							const productLinks = links.filter(
 								(link) => link.product.id === product.id,
@@ -133,11 +165,11 @@ export default function AffiliateProductsPage() {
 							return (
 								<div
 									key={product.id}
-									className="flex flex-col justify-between rounded-xl border border-slate-800/70 bg-slate-900/60 p-4"
+									className="flex min-w-0 flex-col justify-between rounded-xl border border-slate-800/70 bg-slate-900/60 p-4"
 								>
-									<div className="space-y-2">
+									<div className="min-w-0 space-y-2">
 										<div className="flex items-start justify-between gap-2">
-											<div className="space-y-1">
+											<div className="min-w-0 space-y-1">
 												<p className="text-sm font-semibold text-slate-50">
 													{product.name}
 												</p>
