@@ -11,7 +11,6 @@ import {
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
 import { UpcomingPayoutCard } from "@/components/affiliate/UpcomingPayoutCard";
 import { TopEarnersPanel } from "@/components/affiliate/TopEarnersPanel";
-import { PromoterLaunchpad } from "@/components/affiliate/PromoterLaunchpad";
 import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useSignups } from "@/lib/hooks/use-signups";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
@@ -112,9 +111,6 @@ export default function AffiliateDashboardPage() {
 					clearing, and what&apos;s ready to cash out.
 				</p>
 			</header>
-
-			{/* Onboarding launchpad — the "start promoting" prompt for new affiliates */}
-			<PromoterLaunchpad />
 
 			{/* Funnel strip — the headline: signups → converted → earning → paid */}
 			<FunnelStrip />
