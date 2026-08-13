@@ -145,7 +145,7 @@ export function KpiTile({
 				<div className="min-w-0">
 					<div
 						className={cn(
-							"truncate text-[1.35rem] font-semibold leading-7 tabular-nums sm:text-2xl",
+							"truncate font-mono text-xl font-semibold leading-7 tracking-tight tabular-nums sm:text-[1.35rem]",
 							accent ? "text-teal-300" : "text-slate-50",
 						)}
 						title={valueTitle}

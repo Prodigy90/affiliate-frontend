@@ -15,7 +15,7 @@ import { useEarnings } from "@/lib/hooks/use-earnings";
 import { useFunnel } from "@/lib/hooks/use-funnel";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { getSignupTrend } from "@/lib/api/analytics";
-import { formatCurrency, formatInteger } from "@/lib/utils/format";
+import { formatInteger, formatNaira } from "@/lib/utils/format";
 
 /**
  * Percent change of current vs previous. null when there is no meaningful
@@ -193,7 +193,7 @@ export default function AffiliateDashboardPage() {
 					label="Pending"
 					icon={Clock}
 					hue="amber"
-					value={formatCurrency(data.pending_balance, currency)}
+					value={formatNaira(data.pending_balance, currency)}
 					secondary="clears when the refund window closes"
 				/>
 				<KpiTile
@@ -201,7 +201,7 @@ export default function AffiliateDashboardPage() {
 					icon={Banknote}
 					hue="teal"
 					accent
-					value={formatCurrency(data.available_for_payout, currency)}
+					value={formatNaira(data.available_for_payout, currency)}
 					secondary="payout min ₦5,000"
 				/>
 			</div>
@@ -209,14 +209,14 @@ export default function AffiliateDashboardPage() {
 			<div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
 				<p>
 					Earned to date{" "}
-					<b className="font-semibold text-slate-300">
-						{formatCurrency(data.total_earnings, currency)}
+					<b className="font-mono font-semibold tabular-nums text-slate-300">
+						{formatNaira(data.total_earnings, currency)}
 					</b>
 				</p>
 				<p>
 					Paid out{" "}
-					<b className="font-semibold text-slate-300">
-						{formatCurrency(data.paid_balance, currency)}
+					<b className="font-mono font-semibold tabular-nums text-slate-300">
+						{formatNaira(data.paid_balance, currency)}
 					</b>
 				</p>
 			</div>
@@ -226,14 +226,12 @@ export default function AffiliateDashboardPage() {
 				<div className="min-w-0">
 					<ActivityFeed />
 				</div>
-				<div className="grid min-w-0 grid-cols-1 gap-3">
+				<div className="flex min-w-0 flex-col gap-3">
 					<ShareLinkCard />
 					<UpcomingPayoutCard data={data} />
+					<TopEarnersPanel />
 				</div>
 			</div>
-
-			{/* Leaderboard */}
-			<TopEarnersPanel />
 		</div>
 	);
 }

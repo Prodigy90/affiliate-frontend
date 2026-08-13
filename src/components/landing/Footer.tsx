@@ -23,7 +23,7 @@ export function Footer() {
             <div className="mb-3 flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/wasbot-icon.svg"
+                src="/wasbot-white.svg"
                 alt=""
                 width={28}
                 height={28}

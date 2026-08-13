@@ -24,6 +24,20 @@ export function formatCurrency(amount: number, currency?: string) {
 	}
 }
 
+const CURRENCY_SYMBOL: Record<string, string> = { NGN: "₦", USD: "$" };
+
+/**
+ * Compact money display for dashboard surfaces: symbol + whole main units,
+ * no decimals ("₦31,200"). Pair with a mono/tabular-nums class so columns
+ * of amounts line up. `amount` is in the smallest unit (kobo/cents).
+ */
+export function formatNaira(amount: number, currency = "NGN") {
+	const safe = typeof amount !== "number" || isNaN(amount) ? 0 : amount;
+	const main = Math.round(safe / 100);
+	const symbol = CURRENCY_SYMBOL[currency] ?? `${currency} `;
+	return `${symbol}${new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(main)}`;
+}
+
 export function formatInteger(value: number) {
 	return new Intl.NumberFormat(undefined, {
 		maximumFractionDigits: 0,
