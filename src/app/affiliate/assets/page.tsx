@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, Clock, Copy, Download, HardDrive, MessageCircle, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,10 +8,6 @@ import { toast } from "sonner";
 import { signIn } from "@/lib/auth-client";
 import { PageSkeleton } from "@/components/page-skeleton";
 import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
-import {
-	KIT_VISITED_KEY,
-	POSTED_KEY,
-} from "@/components/affiliate/PromoterLaunchpad";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { getReferralLinks } from "@/lib/api/affiliate";
 import type { ReferralLinksListResponse } from "@/lib/types/affiliate";
@@ -150,15 +146,7 @@ const buildCaptions = (link: string) => [
 	},
 ];
 
-function CopyButton({
-	text,
-	small,
-	onCopied,
-}: {
-	text: string;
-	small?: boolean;
-	onCopied?: () => void;
-}) {
+function CopyButton({ text, small }: { text: string; small?: boolean }) {
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async () => {
@@ -166,7 +154,6 @@ function CopyButton({
 			await navigator.clipboard.writeText(text);
 			setCopied(true);
 			toast.success("Copied");
-			onCopied?.();
 			setTimeout(() => setCopied(false), 2000);
 		} catch {
 			toast.error("Couldn't copy");
@@ -279,25 +266,6 @@ export default function PromoKitPage() {
 	const referralLink = data?.links?.[0]?.link_url ?? FALLBACK_LINK;
 	const captions = buildCaptions(referralLink);
 
-	// Launchpad progress: visiting the kit checks step 2; copying a caption
-	// checks step 3 (see PromoterLaunchpad on the dashboard).
-	useEffect(() => {
-		if (!isAuthenticated) return;
-		try {
-			window.localStorage.setItem(KIT_VISITED_KEY, "true");
-		} catch {
-			// ignore
-		}
-	}, [isAuthenticated]);
-
-	const markPosted = () => {
-		try {
-			window.localStorage.setItem(POSTED_KEY, "true");
-		} catch {
-			// ignore
-		}
-	};
-
 	if (authLoading) {
 		return <PageSkeleton />;
 	}
@@ -385,7 +353,7 @@ export default function PromoKitPage() {
 								{caption.text}
 							</p>
 							<div className="flex justify-end">
-								<CopyButton text={caption.text} small onCopied={markPosted} />
+								<CopyButton text={caption.text} small />
 							</div>
 						</div>
 					))}
