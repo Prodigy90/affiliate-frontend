@@ -205,7 +205,7 @@ export default function AffiliateProductsPage() {
 										<div className="flex flex-wrap items-center gap-2">
 											<span className="inline-flex items-center gap-1 rounded-md bg-slate-800/60 px-2 py-0.5 text-[11px] font-medium tabular-nums text-slate-300">
 												<Percent className="h-3 w-3" aria-hidden="true" />
-												{product.base_commission_rate.toFixed(1)}% per payment
+												{(product.commission_rate ?? product.base_commission_rate).toFixed(1)}% per payment
 											</span>
 										</div>
 										{product.enrollment && (

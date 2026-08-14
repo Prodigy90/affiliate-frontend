@@ -56,7 +56,15 @@ const FIELD_CLASS =
 /** Bento tile for a single product — mirrors the affiliate-facing products page. */
 function ProductTile({ product }: { product: ProductSummary }) {
 	const isActive = product.status === "active";
-	const isUnlimited = product.max_commission_payments === null;
+	// The enforced numbers live on the commission config; the product-row
+	// fields only seeded it at create time. Fall back to them solely when no
+	// config exists (a state the worker treats as "drop all commissions").
+	const hasConfig = product.commission_rate !== undefined;
+	const rate = hasConfig ? product.commission_rate : product.base_commission_rate;
+	const maxPayments = hasConfig
+		? (product.commission_max_payments ?? null)
+		: product.max_commission_payments;
+	const isUnlimited = maxPayments === null;
 
 	return (
 		<Link
@@ -97,11 +105,16 @@ function ProductTile({ product }: { product: ProductSummary }) {
 			<div className="relative mt-4 flex flex-wrap items-center gap-2">
 				<span className="inline-flex items-center gap-1 rounded-md bg-slate-800/60 px-2 py-0.5 text-[11px] font-medium tabular-nums text-slate-300">
 					<Percent className="h-3 w-3" aria-hidden="true" />
-					{product.base_commission_rate}% per payment
+					{rate}% per payment
 				</span>
 				<span className="inline-flex items-center gap-1 rounded-md bg-slate-800/60 px-2 py-0.5 text-[11px] font-medium tabular-nums text-slate-300">
-					{isUnlimited ? "Unlimited per referral" : `Max ${product.max_commission_payments} / referral`}
+					{isUnlimited ? "Unlimited per referral" : `Max ${maxPayments} / referral`}
 				</span>
+				{!hasConfig && (
+					<span className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 px-2 py-0.5 text-[11px] font-medium text-rose-300 ring-1 ring-inset ring-rose-500/30">
+						No commission config
+					</span>
+				)}
 			</div>
 		</Link>
 	);

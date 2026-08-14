@@ -113,22 +113,11 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 		register: registerProduct,
 		handleSubmit: handleSubmitProduct,
 		reset: resetProduct,
-		watch: watchProduct,
-		setValue: setProductValue,
 		formState: { errors: productErrors, isSubmitting: isSubmittingProduct },
 	} = useForm<ProductFormInput, unknown, ProductFormValues>({
 		resolver: zodResolver(productSchema),
 		mode: "onChange",
 	});
-
-	const watchUnlimited = watchProduct("unlimited_commissions");
-
-	// Clear max_commission_payments when "Unlimited" is checked
-	useEffect(() => {
-		if (watchUnlimited) {
-			setProductValue("max_commission_payments", undefined, { shouldValidate: true });
-		}
-	}, [watchUnlimited, setProductValue]);
 
 	// Commission config form
 	const {
@@ -209,8 +198,6 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 			description: "Description",
 			base_url: "Base URL",
 			signup_path: "Signup path",
-			base_commission_rate: "Base commission rate",
-			max_commission_payments: "Max per referral",
 			status: "Status",
 		};
 		const errorFields = Object.keys(errors)
@@ -342,7 +329,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 						</span>
 						<div>
 							<h2 className="text-base font-semibold text-slate-50">Product details</h2>
-							<p className="text-xs text-slate-400">Name, URLs, and commission basics.</p>
+							<p className="text-xs text-slate-400">Name, URLs, and status.</p>
 						</div>
 					</div>
 
@@ -410,53 +397,6 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 							</div>
 						</div>
 
-						<div className="grid gap-4 sm:grid-cols-2">
-							<div>
-								<label htmlFor="base_commission_rate" className="mb-1.5 block text-sm font-medium text-slate-300">
-									Base commission rate (%)
-								</label>
-								<input
-									id="base_commission_rate"
-									type="number"
-									step="0.1"
-									min={0}
-									className={`${FIELD_CLASS} font-mono tabular-nums`}
-									{...registerProduct("base_commission_rate", { valueAsNumber: true })}
-								/>
-								{productErrors.base_commission_rate && (
-									<p className="mt-1 text-xs text-red-400">{productErrors.base_commission_rate.message}</p>
-								)}
-							</div>
-
-							<div>
-								<label className="mb-1.5 block text-sm font-medium text-slate-300">
-									Max per referral
-								</label>
-								<div className="mt-2 space-y-2">
-									<label className="flex items-center gap-2 text-sm text-slate-300">
-										<input
-											type="checkbox"
-											{...registerProduct("unlimited_commissions")}
-											className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-teal-500 focus:ring-teal-500"
-										/>
-										Unlimited
-									</label>
-									{!watchUnlimited && (
-										<input
-											type="number"
-											min={1}
-											step={1}
-											className={`${FIELD_CLASS} font-mono tabular-nums`}
-											{...registerProduct("max_commission_payments", { valueAsNumber: true })}
-										/>
-									)}
-								</div>
-								{!watchUnlimited && productErrors.max_commission_payments && (
-									<p className="mt-1 text-xs text-red-400">{productErrors.max_commission_payments.message}</p>
-								)}
-							</div>
-						</div>
-
 						<div>
 							<label htmlFor="status" className="mb-1.5 block text-sm font-medium text-slate-300">
 								Status
@@ -479,12 +419,14 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 							</div>
 						)}
 
-						<SaveButton
-							pending={isSubmittingProduct || updateProductMutation.isPending}
-							disabled={isSubmittingProduct || updateProductMutation.isPending}
-						>
-							Save product details
-						</SaveButton>
+						<div className="flex justify-end border-t border-slate-800/60 pt-4">
+							<SaveButton
+								pending={isSubmittingProduct || updateProductMutation.isPending}
+								disabled={isSubmittingProduct || updateProductMutation.isPending}
+							>
+								Save product details
+							</SaveButton>
+						</div>
 					</form>
 				</div>
 
@@ -495,7 +437,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 						</span>
 						<div>
 							<h2 className="text-base font-semibold text-slate-50">Commission config</h2>
-							<p className="text-xs text-slate-400">Rates and caps applied per commission.</p>
+							<p className="text-xs text-slate-400">The enforced rates and caps. Crediting reads these numbers.</p>
 						</div>
 					</div>
 
@@ -596,7 +538,7 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 							</div>
 						</div>
 
-						<label className="inline-flex items-center gap-2 text-sm text-slate-300">
+						<label className="flex items-center gap-2 text-sm text-slate-300">
 							<input
 								type="checkbox"
 								className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-teal-500 focus:ring-teal-500"
@@ -605,12 +547,14 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 							Enable lifetime commissions for this product
 						</label>
 
-						<SaveButton
-							pending={isSubmittingCommission}
-							disabled={isSubmittingCommission}
-						>
-							Save commission config
-						</SaveButton>
+						<div className="flex justify-end border-t border-slate-800/60 pt-4">
+							<SaveButton
+								pending={isSubmittingCommission}
+								disabled={isSubmittingCommission}
+							>
+								Save commission config
+							</SaveButton>
+						</div>
 					</form>
 				</div>
 			</section>

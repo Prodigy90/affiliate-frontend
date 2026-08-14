@@ -3,9 +3,21 @@ export type ProductSummary = {
   product_id: string;
   name: string;
   description: string;
+  /** Legacy seed value — NOT enforced. Prefer commission_rate when present. */
   base_commission_rate: number;
+  /** Legacy seed value — NOT enforced. */
   max_commission_payments: number | null;
   status: string;
+  /**
+   * The enforced commission_configs.default_rate. Absent when the product has
+   * no commission config (its commissions are dropped by the worker).
+   */
+  commission_rate?: number;
+  /**
+   * The enforced payment cap. Only meaningful when commission_rate is
+   * present; absent there means unlimited payments per referral.
+   */
+  commission_max_payments?: number | null;
 };
 
 export type ProductListResponse = {
