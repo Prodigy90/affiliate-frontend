@@ -15,15 +15,31 @@ import type { NavigationItem } from "./TopNav";
  * (copy-link CTA + user menu). Mobile is handled by MobileTopBar +
  * BottomTabBar, not here.
  */
-export function DockNav({ items }: { items: NavigationItem[] }) {
+export function DockNav({
+	items,
+	homeHref = "/affiliate/dashboard",
+	badge = "Affiliates",
+	badgeClassName = "bg-teal-500/10 text-teal-300",
+}: {
+	items: NavigationItem[];
+	homeHref?: string;
+	badge?: string;
+	badgeClassName?: string;
+}) {
 	const pathname = usePathname();
 
-	const isActiveLink = (item: NavigationItem) => {
-		if (!pathname) return false;
-		if (pathname === item.href) return true;
-		if (item.href !== "/" && pathname.startsWith(`${item.href}/`)) return true;
-		return false;
-	};
+	// Longest matching href wins so a parent route like /admin doesn't stay
+	// active while a sibling tab (/admin/payouts) is the real location.
+	const activeHref = pathname
+		? [...items]
+				.sort((a, b) => b.href.length - a.href.length)
+				.find(
+					(item) =>
+						pathname === item.href ||
+						(item.href !== "/" && pathname.startsWith(`${item.href}/`))
+				)?.href
+		: undefined;
+	const isActiveLink = (item: NavigationItem) => item.href === activeHref;
 
 	const [scrolled, setScrolled] = useState(false);
 	useEffect(() => {
@@ -50,7 +66,7 @@ export function DockNav({ items }: { items: NavigationItem[] }) {
 			<div className="mx-auto flex max-w-7xl items-center justify-center gap-2">
 				{/* Pill 1 — Logo */}
 				<Link
-					href="/affiliate/dashboard"
+					href={homeHref}
 					className={pillClass("flex shrink-0 items-center gap-2 px-3 py-1.5")}
 				>
 					{/* eslint-disable-next-line @next/next/no-img-element */}
@@ -61,8 +77,10 @@ export function DockNav({ items }: { items: NavigationItem[] }) {
 						height={28}
 						className="rounded-lg"
 					/>
-					<span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-300">
-						Affiliates
+					<span
+						className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${badgeClassName}`}
+					>
+						{badge}
 					</span>
 				</Link>
 

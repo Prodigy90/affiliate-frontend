@@ -3,13 +3,12 @@
 import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Banknote } from "lucide-react";
+import { Banknote, Check, X } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 import { PageSkeleton } from "@/components/page-skeleton";
 
 import { approvePayout, rejectPayout } from "@/lib/api/admin";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
-import { StatusBadge } from "@/components/status-badge";
+import { formatNaira, formatDate } from "@/lib/utils/format";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StackedCard, StackedCardList } from "@/components/shared/StackedCard";
 import { useAuthSession } from "@/components/auth-guard";
@@ -21,6 +20,49 @@ import {
   type PageSize,
 } from "@/components/admin/PaginationBar";
 import { usePaginatedAdminPayouts } from "@/lib/hooks/use-paginated-payouts";
+
+// Status pill palette for payouts — dot + tinted border, matched to the
+// house status-pill pattern. Kept local to this page rather than folded
+// into the shared StatusBadge, which other (non-dotted) surfaces rely on.
+const STATUS_STYLES: Record<string, { pill: string; dot: string }> = {
+  completed: {
+    pill: "border-teal-500/30 bg-teal-500/10 text-teal-300",
+    dot: "bg-teal-400",
+  },
+  pending: {
+    pill: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+    dot: "bg-amber-400",
+  },
+  processing: {
+    pill: "border-sky-500/30 bg-sky-500/10 text-sky-300",
+    dot: "bg-sky-400",
+  },
+  failed: {
+    pill: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+    dot: "bg-rose-400",
+  },
+  rejected: {
+    pill: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+    dot: "bg-rose-400",
+  },
+};
+
+const DEFAULT_STATUS_STYLE = {
+  pill: "border-slate-700 bg-slate-800/60 text-slate-300",
+  dot: "bg-slate-400",
+};
+
+function PayoutStatusPill({ status }: { status: string }) {
+  const style = STATUS_STYLES[status] ?? DEFAULT_STATUS_STYLE;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${style.pill}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} aria-hidden="true" />
+      {status}
+    </span>
+  );
+}
 
 export default function AdminPayoutsPage() {
   const queryClient = useQueryClient();
@@ -69,6 +111,16 @@ export default function AdminPayoutsPage() {
   // and returns the correct total, so we render the server rows directly.
   const payouts = data?.payouts ?? [];
 
+  // Status counts for the summary strip — derived from the current page's
+  // response only (no extra API calls), so this reflects this page, not the
+  // full filtered result set.
+  const statusCounts = Object.entries(
+    payouts.reduce<Record<string, number>>((acc, p) => {
+      acc[p.status] = (acc[p.status] ?? 0) + 1;
+      return acc;
+    }, {}),
+  );
+
   const handleSearchChange = useCallback((next: string) => {
     setQ(next);
     setPage(1);
@@ -112,19 +164,41 @@ export default function AdminPayoutsPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300/80">
-          Admin · Payouts
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-400">
+          Payouts
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
-          Review and process payout requests.
+        <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          Money going out.
         </h1>
-        <p className="max-w-xl text-sm text-slate-300">
-          See payout requests across all affiliates and mark them as completed or
-          rejected when manual transfers are done.
+        <p className="max-w-xl text-sm text-slate-400">
+          Review payout requests across all affiliates and mark them completed
+          or rejected once a manual transfer is done.
         </p>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+      {/* Summary strip — status counts for the current page, a quiet at-a-glance
+          read before scanning the table below. */}
+      {!isLoading && !isError && payouts.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-slate-800/70 bg-slate-900/40 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            This page
+          </p>
+          {statusCounts.map(([statusKey, count]) => {
+            const style = STATUS_STYLES[statusKey] ?? DEFAULT_STATUS_STYLE;
+            return (
+              <div key={statusKey} className="flex items-center gap-1.5">
+                <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} aria-hidden="true" />
+                <span className="text-xs capitalize text-slate-400">{statusKey}</span>
+                <span className="font-mono text-xs font-semibold tabular-nums text-slate-100">
+                  {count}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
             Payout requests
@@ -180,14 +254,14 @@ export default function AdminPayoutsPage() {
                     {
                       label: "Amount",
                       value: (
-                        <span className="font-semibold text-teal-300">
-                          {formatCurrency(payout.amount, payout.currency)}
+                        <span className="font-mono font-semibold tabular-nums text-teal-300">
+                          {formatNaira(payout.amount, payout.currency)}
                         </span>
                       ),
                     },
                     {
                       label: "Status",
-                      value: <StatusBadge status={payout.status} variant="payout" />,
+                      value: <PayoutStatusPill status={payout.status} />,
                     },
                     { label: "Requested", value: formatDate(payout.created_at) },
                   ]}
@@ -198,16 +272,18 @@ export default function AdminPayoutsPage() {
                           type="button"
                           disabled={approveMutation.isPending || rejectMutation.isPending}
                           onClick={() => approveMutation.mutate(payout.id)}
-                          className="rounded-full bg-teal-500 px-3 py-1 text-[11px] font-medium text-teal-950 disabled:cursor-not-allowed disabled:bg-teal-500/40"
+                          className="inline-flex items-center gap-1 rounded-full bg-teal-500 px-3 py-1 text-[11px] font-semibold text-slate-950 transition hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-teal-500/40"
                         >
+                          <Check className="h-3 w-3" aria-hidden="true" />
                           Mark completed
                         </button>
                         <button
                           type="button"
                           disabled={approveMutation.isPending || rejectMutation.isPending}
                           onClick={() => rejectMutation.mutate(payout.id)}
-                          className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 disabled:cursor-not-allowed disabled:border-slate-700/60 disabled:bg-slate-800/60"
+                          className="inline-flex items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-slate-700/60 disabled:bg-slate-800/40 disabled:text-slate-500"
                         >
+                          <X className="h-3 w-3" aria-hidden="true" />
                           Reject
                         </button>
                       </div>
@@ -219,72 +295,87 @@ export default function AdminPayoutsPage() {
 
             {/* Desktop: table (>=sm). */}
             <div className="hidden overflow-x-auto sm:block">
-            <table className="min-w-full text-left text-xs text-slate-200">
-              <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                <tr>
-                  <th className="px-2 py-2">Affiliate</th>
-                  <th className="px-2 py-2">Amount</th>
-                  <th className="px-2 py-2">Status</th>
-                  <th className="px-2 py-2">Requested</th>
-                  <th className="px-2 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/80">
-                {payouts.map((payout) => (
-                  <tr key={payout.id} className="align-middle">
-                    <td className="px-2 py-2">
-                      <p className="text-xs font-medium text-slate-100">
-                        {payout.affiliate_name || shortenId(payout.affiliate_id)}
-                      </p>
-                      <p className="text-[11px] text-slate-400">
-                        {payout.affiliate_name ? shortenId(payout.affiliate_id) : payout.affiliate_id}
-                      </p>
-                    </td>
-                    <td className="px-2 py-2">
-                      <p className="text-xs font-semibold text-teal-300">
-                        {formatCurrency(payout.amount, payout.currency)}
-                      </p>
-                    </td>
-                    <td className="px-2 py-2">
-                      <StatusBadge status={payout.status} variant="payout" />
-                    </td>
-                    <td className="px-2 py-2">
-                      <p className="text-xs text-slate-200">
-                        {formatDate(payout.created_at)}
-                      </p>
-                    </td>
-                    <td className="px-2 py-2">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          disabled={
-                            payout.status !== "pending" ||
-                            approveMutation.isPending ||
-                            rejectMutation.isPending
-                          }
-                          onClick={() => approveMutation.mutate(payout.id)}
-                          className="rounded-full bg-teal-500 px-3 py-1 text-[11px] font-medium text-teal-950 disabled:cursor-not-allowed disabled:bg-teal-500/40"
-                        >
-                          Mark completed
-                        </button>
-                        <button
-                          type="button"
-                          disabled={
-                            payout.status !== "pending" ||
-                            approveMutation.isPending ||
-                            rejectMutation.isPending
-                          }
-                          onClick={() => rejectMutation.mutate(payout.id)}
-                          className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 disabled:cursor-not-allowed disabled:border-slate-700/60 disabled:bg-slate-800/60"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
+              <table className="min-w-full text-left text-sm text-slate-200">
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Affiliate
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Amount
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Status
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Requested
+                    </th>
+                    <th className="px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {payouts.map((payout) => (
+                    <tr
+                      key={payout.id}
+                      className="border-b border-slate-800/50 align-middle transition-colors hover:bg-slate-800/30"
+                    >
+                      <td className="px-3 py-3">
+                        <p className="text-sm font-medium text-slate-100">
+                          {payout.affiliate_name || shortenId(payout.affiliate_id)}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {payout.affiliate_name ? shortenId(payout.affiliate_id) : payout.affiliate_id}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <p className="font-mono text-sm font-semibold tabular-nums text-teal-300">
+                          {formatNaira(payout.amount, payout.currency)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <PayoutStatusPill status={payout.status} />
+                      </td>
+                      <td className="px-3 py-3">
+                        <p className="text-sm text-slate-300">
+                          {formatDate(payout.created_at)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            disabled={
+                              payout.status !== "pending" ||
+                              approveMutation.isPending ||
+                              rejectMutation.isPending
+                            }
+                            onClick={() => approveMutation.mutate(payout.id)}
+                            className="inline-flex items-center gap-1 rounded-full bg-teal-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+                          >
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                            Mark completed
+                          </button>
+                          <button
+                            type="button"
+                            disabled={
+                              payout.status !== "pending" ||
+                              approveMutation.isPending ||
+                              rejectMutation.isPending
+                            }
+                            onClick={() => rejectMutation.mutate(payout.id)}
+                            className="inline-flex items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-slate-700/60 disabled:bg-slate-800/40 disabled:text-slate-500"
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </>
         )}
