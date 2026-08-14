@@ -1,602 +1,491 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+	Area,
+	Bar,
+	CartesianGrid,
+	ComposedChart,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
 } from "recharts";
-import { Banknote, ChevronRight, HandCoins, Package, Percent, UserPlus, Users } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { HandCoins, Percent, UserPlus, Users } from "lucide-react";
 import { KpiTile } from "@/components/affiliate/KpiTile";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { SectionHeader } from "@/components/shared/SectionHeader";
+import { StatsRangeControl } from "@/components/shared/StatsRangeControl";
+import {
+	CHART_GRID_STROKE,
+	CHART_TICK_FILL,
+	StatsChartShell,
+	StatsChartTooltip,
+	type ChartSeriesDef,
+} from "@/components/shared/stats-chart";
+import { useActiveRange } from "@/lib/hooks/use-active-range";
+import { bucketPeriods, bucketTickLabel, fmtCompact, safeRate } from "@/lib/stats/series";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import {
-  getEarningsTrend,
-  getProductPerformance,
-  getConversionMetrics,
-  getFunnel,
-  getSignupTrend,
+	getEarningsTrend,
+	getProductPerformance,
+	getConversionMetrics,
+	getFunnel,
+	getSignupTrend,
 } from "@/lib/api/analytics";
-import type { FunnelData } from "@/lib/types/analytics";
 import { formatInteger, formatNaira } from "@/lib/utils/format";
 
-type FunnelAccent = "teal" | "violet" | "amber" | "emerald";
+/**
+ * Analytics — the affiliate sibling of wasbot-frontend's stats pages, on
+ * the same grammar: one range control (preset chips + calendar picker)
+ * scoping everything, a KPI bento row, a big trend chart owning the left
+ * 2/3, and a quiet right rail (funnel + product split). One screen, no
+ * long scroll.
+ *
+ * Chart mark colors follow the wasbot dataviz picks against #020617:
+ * teal #0d9488 for money (the hero metric), indigo #6366f1 for signups.
+ */
 
-const FUNNEL_ACCENT: Record<
-  FunnelAccent,
-  { iconBg: string; iconText: string; ring: string; bar: string }
-> = {
-  teal: {
-    iconBg: "bg-teal-500/10",
-    iconText: "text-teal-300",
-    ring: "ring-teal-500/20",
-    bar: "bg-teal-500/60",
-  },
-  violet: {
-    iconBg: "bg-violet-500/10",
-    iconText: "text-violet-300",
-    ring: "ring-violet-500/20",
-    bar: "bg-violet-500/60",
-  },
-  amber: {
-    iconBg: "bg-amber-500/10",
-    iconText: "text-amber-300",
-    ring: "ring-amber-500/20",
-    bar: "bg-amber-500/60",
-  },
-  emerald: {
-    iconBg: "bg-emerald-500/10",
-    iconText: "text-emerald-300",
-    ring: "ring-emerald-500/20",
-    bar: "bg-emerald-500/60",
-  },
+const COLOR_EARNINGS = "#0d9488";
+const COLOR_SIGNUPS = "#6366f1";
+
+/** Trend amounts arrive in naira main units (the Go layer divides by 100). */
+const fmtNairaMain = (v: number) => `₦${Math.round(v).toLocaleString("en-NG")}`;
+
+type ChartMode = "earnings" | "signups";
+
+const MODES: { key: ChartMode; label: string }[] = [
+	{ key: "earnings", label: "Earnings" },
+	{ key: "signups", label: "Signups" },
+];
+
+const SERIES_BY_MODE: Record<ChartMode, ChartSeriesDef[]> = {
+	earnings: [
+		{ key: "earnings", name: "Earned", color: COLOR_EARNINGS, formatValue: fmtNairaMain },
+	],
+	signups: [{ key: "signups", name: "Signups", color: COLOR_SIGNUPS }],
 };
 
-type RangedFunnelStage = {
-  label: string;
-  value: string;
-  caption: string;
-  icon: LucideIcon;
-  accent: FunnelAccent;
-  /** Relative bar width 0–100, scaled against the top stage (signups/earning). */
-  width: number;
-};
-
-function FunnelConnector({ rate, note }: { rate: number; note: string }) {
-  const safe = typeof rate === "number" && !isNaN(rate) ? rate : 0;
-  const pct = `${formatInteger(Math.round(safe))}%`;
-  return (
-    <div className="flex shrink-0 flex-row items-center justify-center gap-1 py-1 sm:flex-col sm:py-0">
-      <ChevronRight
-        className="h-5 w-5 rotate-90 text-slate-600 sm:rotate-0"
-        aria-hidden="true"
-      />
-      <div className="flex flex-row items-baseline gap-1 sm:flex-col sm:items-center sm:gap-0">
-        <span className="text-sm font-semibold text-slate-200">{pct}</span>
-        <span className="text-[10px] uppercase tracking-[0.12em] text-slate-500">
-          {note}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function RangedFunnelCard({ stage }: { stage: RangedFunnelStage }) {
-  const palette = FUNNEL_ACCENT[stage.accent];
-  const Icon = stage.icon;
-  return (
-    <div
-      className={`flex min-w-0 flex-1 flex-col rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 ring-1 ring-inset ${palette.ring}`}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${palette.iconBg} ${palette.iconText}`}
-        >
-          <Icon className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <p className="truncate text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-          {stage.label}
-        </p>
-      </div>
-      <p className="mt-3 truncate text-xl font-semibold text-slate-50 sm:text-2xl">
-        {stage.value}
-      </p>
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-        <div
-          className={`h-full rounded-full ${palette.bar}`}
-          style={{ width: `${Math.max(2, Math.min(100, stage.width))}%` }}
-        />
-      </div>
-      <p className="mt-2 text-[11px] text-slate-500">{stage.caption}</p>
-    </div>
-  );
-}
-
-function RangedFunnel({ funnel }: { funnel: FunnelData }) {
-  const currency = funnel.currency;
-
-  // Drop-off bars: count stages scale against signups, money stages against earning.
-  const countMax = Math.max(funnel.signups, 1);
-  const moneyMax = Math.max(funnel.earning, 1);
-
-  const stages: RangedFunnelStage[] = [
-    {
-      label: "Signups",
-      value: formatInteger(funnel.signups),
-      caption: "Joined via your link",
-      icon: UserPlus,
-      accent: "teal",
-      width: (funnel.signups / countMax) * 100,
-    },
-    {
-      label: "Converted",
-      value: formatInteger(funnel.converted),
-      caption: "Became paying customers",
-      icon: Users,
-      accent: "violet",
-      width: (funnel.converted / countMax) * 100,
-    },
-    {
-      label: "Earning",
-      value: formatNaira(funnel.earning, currency),
-      caption: "Commission credited",
-      icon: HandCoins,
-      accent: "amber",
-      width: (funnel.earning / moneyMax) * 100,
-    },
-    {
-      label: "Paid",
-      value: formatNaira(funnel.paid, currency),
-      caption: "Cashed out to you",
-      icon: Banknote,
-      accent: "emerald",
-      width: (funnel.paid / moneyMax) * 100,
-    },
-  ];
-
-  return (
-    <section
-      aria-label="Referral funnel for selected range"
-      className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6"
-    >
-      <SectionHeader label="Funnel" title="Referral funnel" />
-      <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-stretch">
-        <RangedFunnelCard stage={stages[0]} />
-        <FunnelConnector rate={funnel.signup_to_converted_rate} note="convert" />
-        <RangedFunnelCard stage={stages[1]} />
-        <div className="flex shrink-0 items-center justify-center py-1 sm:py-0">
-          <ChevronRight
-            className="h-5 w-5 rotate-90 text-slate-600 sm:rotate-0"
-            aria-hidden="true"
-          />
-        </div>
-        <RangedFunnelCard stage={stages[2]} />
-        <FunnelConnector rate={funnel.earning_to_paid_rate} note="paid out" />
-        <RangedFunnelCard stage={stages[3]} />
-      </div>
-    </section>
-  );
+/** One quiet row in the right-rail funnel: label, value, proportion bar. */
+function FunnelRow({
+	dot,
+	label,
+	value,
+	rate,
+	width,
+}: {
+	dot: string;
+	label: string;
+	value: string;
+	/** Optional stage-to-stage caption, e.g. "38% convert". */
+	rate?: string;
+	/** Bar width 0–100. */
+	width: number;
+}) {
+	return (
+		<div>
+			<div className="flex items-baseline gap-2 text-xs">
+				<span
+					aria-hidden="true"
+					className="h-2 w-2 shrink-0 self-center rounded-full"
+					style={{ backgroundColor: dot }}
+				/>
+				<span className="text-slate-400">{label}</span>
+				<span className="ml-auto font-semibold tabular-nums text-slate-50">{value}</span>
+				{rate && (
+					<span className="w-16 shrink-0 text-right text-[11px] tabular-nums text-slate-500">
+						{rate}
+					</span>
+				)}
+			</div>
+			<div className="ml-4 mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+				<div
+					className="h-full rounded-full"
+					style={{
+						width: `${Math.max(2, Math.min(100, width))}%`,
+						backgroundColor: dot,
+						opacity: 0.75,
+					}}
+				/>
+			</div>
+		</div>
+	);
 }
 
 export default function AnalyticsPage() {
-  const { isAuthenticated } = useAffiliate();
+	const { isAuthenticated, isLoading: authLoading } = useAffiliate();
 
-  // Date range state (default to last 30 days)
-  const [dateRange, setDateRange] = useState(() => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setDate(now.getDate() - 30);
-    return {
-      from: thirtyDaysAgo.toISOString().split("T")[0],
-      to: now.toISOString().split("T")[0],
-    };
-  });
+	// One resolved range object scopes everything on the page. Granularity
+	// auto-picks from the span — no separate granularity selector.
+	const { rangeKey, customRange, range, setRange } = useActiveRange();
+	const [mode, setMode] = useState<ChartMode>("earnings");
 
-  const [granularity, setGranularity] = useState<"day" | "week" | "month">(
-    "day"
-  );
+	const trendParams = {
+		from_date: range.from,
+		to_date: range.to,
+		granularity: range.granularity,
+	};
+	const windowParams = { from_date: range.from, to_date: range.to };
 
-  // Fetch earnings trend
-  const {
-    data: earningsTrend = [],
-    isLoading: isLoadingTrend,
-    error: trendError,
-  } = useQuery({
-    queryKey: ["analytics", "earnings-trend", dateRange, granularity],
-    queryFn: () =>
-      getEarningsTrend({
-        from_date: dateRange.from,
-        to_date: dateRange.to,
-        granularity,
-      }),
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+	const {
+		data: earningsTrend = [],
+		isLoading: isLoadingTrend,
+		isFetching: trendFetching,
+		error: trendError,
+	} = useQuery({
+		queryKey: ["analytics", "earnings-trend", trendParams],
+		queryFn: () => getEarningsTrend(trendParams),
+		enabled: isAuthenticated,
+		staleTime: 30_000,
+	});
 
-  // Fetch product performance
-  const {
-    data: productPerformance = [],
-    isLoading: isLoadingProducts,
-    error: productsError,
-  } = useQuery({
-    queryKey: ["analytics", "product-performance", dateRange],
-    queryFn: () =>
-      getProductPerformance({
-        from_date: dateRange.from,
-        to_date: dateRange.to,
-      }),
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+	const {
+		data: signupTrend = [],
+		isLoading: isLoadingSignups,
+		isFetching: signupsFetching,
+		error: signupsError,
+	} = useQuery({
+		queryKey: ["analytics", "signup-trend", trendParams],
+		queryFn: () => getSignupTrend(trendParams),
+		enabled: isAuthenticated,
+		staleTime: 30_000,
+	});
 
-  // Fetch conversion metrics
-  const {
-    data: conversionMetrics,
-    isLoading: isLoadingConversions,
-    error: conversionsError,
-  } = useQuery({
-    queryKey: ["analytics", "conversion-metrics", dateRange],
-    queryFn: () =>
-      getConversionMetrics({
-        from_date: dateRange.from,
-        to_date: dateRange.to,
-      }),
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+	const {
+		data: productPerformance = [],
+		isLoading: isLoadingProducts,
+		error: productsError,
+	} = useQuery({
+		queryKey: ["analytics", "product-performance", windowParams],
+		queryFn: () => getProductPerformance(windowParams),
+		enabled: isAuthenticated,
+		staleTime: 30_000,
+	});
 
-  // Fetch funnel over the selected date range (the dashboard KPI tiles use
-  // the default window; here we pass the page's range so it stays in sync).
-  const {
-    data: funnel,
-    isLoading: isLoadingFunnel,
-    error: funnelError,
-  } = useQuery({
-    queryKey: ["analytics", "funnel", dateRange],
-    queryFn: () =>
-      getFunnel({
-        from_date: dateRange.from,
-        to_date: dateRange.to,
-      }),
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+	const {
+		data: conversionMetrics,
+		isLoading: isLoadingConversions,
+		error: conversionsError,
+	} = useQuery({
+		queryKey: ["analytics", "conversion-metrics", windowParams],
+		queryFn: () => getConversionMetrics(windowParams),
+		enabled: isAuthenticated,
+		staleTime: 30_000,
+	});
 
-  // Fetch signup trend
-  const {
-    data: signupTrend = [],
-    isLoading: isLoadingSignups,
-    error: signupsError,
-  } = useQuery({
-    queryKey: ["analytics", "signup-trend", dateRange, granularity],
-    queryFn: () =>
-      getSignupTrend({
-        from_date: dateRange.from,
-        to_date: dateRange.to,
-        granularity,
-      }),
-    enabled: isAuthenticated,
-    staleTime: 30_000,
-  });
+	const {
+		data: funnel,
+		isLoading: isLoadingFunnel,
+		error: funnelError,
+	} = useQuery({
+		queryKey: ["analytics", "funnel", windowParams],
+		queryFn: () => getFunnel(windowParams),
+		enabled: isAuthenticated,
+		staleTime: 30_000,
+	});
 
-  const isLoading =
-    isLoadingTrend ||
-    isLoadingProducts ||
-    isLoadingConversions ||
-    isLoadingFunnel ||
-    isLoadingSignups;
-  const hasError =
-    trendError ||
-    productsError ||
-    conversionsError ||
-    funnelError ||
-    signupsError;
+	// Zero-fill both sparse trends onto the range's bucket grid so the chart
+	// keeps a continuous axis (the API skips empty buckets).
+	const chartData = useMemo(() => {
+		const earningsByPeriod = new Map(earningsTrend.map((p) => [p.period, p.total_earnings]));
+		const signupsByPeriod = new Map(signupTrend.map((p) => [p.period, p.signup_count]));
+		return bucketPeriods(range).map((period) => ({
+			period,
+			earnings: earningsByPeriod.get(period) ?? 0,
+			signups: signupsByPeriod.get(period) ?? 0,
+		}));
+	}, [earningsTrend, signupTrend, range]);
 
-  if (hasError) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <p className="text-red-400">Failed to load analytics data</p>
-          <p className="text-slate-400 text-sm mt-2">
-            {
-              (trendError ||
-                productsError ||
-                conversionsError ||
-                funnelError ||
-                signupsError)?.message
-            }
-          </p>
-        </div>
-      </div>
-    );
-  }
+	const earnedSpark = useMemo(() => chartData.map((d) => d.earnings), [chartData]);
+	const signupSpark = useMemo(() => chartData.map((d) => d.signups), [chartData]);
 
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300/80">
-          Analytics
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
-          Track your performance and earnings over time.
-        </h1>
-        <p className="max-w-xl text-sm text-slate-300">
-          Filter by date range and granularity to see how your referrals and
-          commissions are trending.
-        </p>
-      </section>
+	// authLoading leads the gate: the server (and the client's first paint)
+	// both resolve it as pending, so SSR and hydration agree on the skeleton.
+	const isLoading =
+		authLoading ||
+		isLoadingTrend ||
+		isLoadingProducts ||
+		isLoadingConversions ||
+		isLoadingFunnel ||
+		isLoadingSignups;
+	const firstError =
+		trendError || productsError || conversionsError || funnelError || signupsError;
 
-      {/* Date Range Filters */}
-      <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
-        <div className="flex flex-wrap gap-4">
-          <div className="min-w-0 flex-1 sm:min-w-50">
-            <label className="block text-sm text-slate-400 mb-2">
-              From Date
-            </label>
-            <input
-              type="date"
-              value={dateRange.from}
-              max={dateRange.to}
-              onChange={(e) => {
-                const from = e.target.value;
-                // Keep from <= to even if a value is typed past the picker bounds.
-                setDateRange((prev) => ({
-                  from,
-                  to: prev.to && from > prev.to ? from : prev.to,
-                }));
-              }}
-              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
-            />
-          </div>
-          <div className="min-w-0 flex-1 sm:min-w-50">
-            <label className="block text-sm text-slate-400 mb-2">
-              To Date
-            </label>
-            <input
-              type="date"
-              value={dateRange.to}
-              min={dateRange.from}
-              onChange={(e) => {
-                const to = e.target.value;
-                // Keep from <= to even if a value is typed past the picker bounds.
-                setDateRange((prev) => ({
-                  from: prev.from && to < prev.from ? to : prev.from,
-                  to,
-                }));
-              }}
-              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
-            />
-          </div>
-          <div className="min-w-0 flex-1 sm:min-w-50">
-            <label className="block text-sm text-slate-400 mb-2">
-              Granularity
-            </label>
-            <select
-              value={granularity}
-              onChange={(e) =>
-                setGranularity(e.target.value as "day" | "week" | "month")
-              }
-              className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
-            >
-              <option value="day">Daily</option>
-              <option value="week">Weekly</option>
-              <option value="month">Monthly</option>
-            </select>
-          </div>
-        </div>
-      </div>
+	if (firstError) {
+		return (
+			<div className="flex min-h-[60vh] items-center justify-center">
+				<div className="text-center">
+					<p className="text-red-400">Failed to load analytics data</p>
+					<p className="mt-2 text-sm text-slate-400">{firstError.message}</p>
+				</div>
+			</div>
+		);
+	}
 
-      {isLoading ? (
-        <div className="space-y-8" aria-busy="true">
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-28 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60"
-              />
-            ))}
-          </div>
-          <div className="h-[360px] animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60" />
-          <div className="h-[360px] animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60" />
-        </div>
-      ) : (
-        <>
-          {/* Referral Funnel (selected range) */}
-          {funnel && <RangedFunnel funnel={funnel} />}
+	const chartLoading = isLoadingTrend || isLoadingSignups;
+	const chartFetching = trendFetching || signupsFetching;
+	const defs = SERIES_BY_MODE[mode];
+	const chartEmpty =
+		!chartLoading &&
+		(mode === "earnings"
+			? chartData.every((d) => d.earnings === 0)
+			: chartData.every((d) => d.signups === 0));
 
-          {/* Conversion Metrics */}
-          {conversionMetrics && (
-            <div className="space-y-3">
-              <SectionHeader label="Overview" title="Conversion metrics" />
-              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                <KpiTile
-                  label="Total referrals"
-                  icon={Users}
-                  hue="sky"
-                  value={conversionMetrics.total_referrals.toLocaleString()}
-                  secondary="all time clicks"
-                />
-                <KpiTile
-                  label="Successful referrals"
-                  icon={UserPlus}
-                  hue="violet"
-                  value={conversionMetrics.successful_referrals.toLocaleString()}
-                  secondary="converted to sales"
-                />
-                <KpiTile
-                  label="Conversion rate"
-                  icon={Percent}
-                  hue="amber"
-                  value={`${conversionMetrics.conversion_rate.toFixed(1)}%`}
-                  secondary="success rate"
-                />
-                <KpiTile
-                  label="Total earnings"
-                  icon={HandCoins}
-                  hue="teal"
-                  accent
-                  value={`₦${conversionMetrics.total_earnings.toLocaleString()}`}
-                  secondary="in selected period"
-                />
-              </div>
-            </div>
-          )}
+	const currency = funnel?.currency ?? "NGN";
+	const productMax = Math.max(...productPerformance.map((p) => p.total_commissions), 1);
+	const topProducts = productPerformance.slice(0, 4);
 
-          {/* Earnings Trend Chart */}
-          <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
-            <SectionHeader label="Trend" title="Earnings trend" />
-            {!earningsTrend || earningsTrend.length === 0 ? (
-              <EmptyState
-                icon={HandCoins}
-                accent="teal"
-                title="No earnings yet"
-                body="There's no earnings data for this period. Try a wider date range."
-              />
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={earningsTrend}>
-                  <defs>
-                    <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis
-                    dataKey="period"
-                    stroke="#94a3b8"
-                    tick={{ fill: "#94a3b8" }}
-                  />
-                  <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8" }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "8px",
-                      color: "#fff",
-                    }}
-                    formatter={(value) => [
-                      `₦${Number(value).toLocaleString()}`,
-                      "Earnings",
-                    ]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="total_earnings"
-                    stroke="#14b8a6"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorEarnings)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+	return (
+		<div className="space-y-4">
+			{/* Compact header — title left, the one range control right. */}
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div className="min-w-0">
+					<p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-300/80">
+						Analytics
+					</p>
+					<h1 className="truncate text-xl font-semibold tracking-tight text-slate-50 sm:text-2xl">
+						Your referral engine.
+					</h1>
+				</div>
+				<StatsRangeControl
+					rangeKey={rangeKey}
+					customRange={customRange}
+					activeLabel={range.label}
+					onChange={setRange}
+				/>
+			</div>
 
-          {/* Signups Trend Chart */}
-          <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
-            <SectionHeader label="Trend" title="Signups" />
-            {!signupTrend || signupTrend.length === 0 ? (
-              <EmptyState
-                icon={UserPlus}
-                accent="teal"
-                title="No signups yet"
-                body="No referred signups in this period. Try a wider date range."
-              />
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={signupTrend}>
-                  <defs>
-                    <linearGradient id="colorSignups" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis
-                    dataKey="period"
-                    stroke="#94a3b8"
-                    tick={{ fill: "#94a3b8" }}
-                  />
-                  <YAxis
-                    stroke="#94a3b8"
-                    tick={{ fill: "#94a3b8" }}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "8px",
-                      color: "#fff",
-                    }}
-                    formatter={(value) => [
-                      Number(value).toLocaleString(),
-                      "Signups",
-                    ]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="signup_count"
-                    stroke="#14b8a6"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorSignups)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+			{isLoading ? (
+				<div className="space-y-4" aria-busy="true">
+					<div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<div
+								key={i}
+								className="h-28 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60"
+							/>
+						))}
+					</div>
+					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+						<div className="h-[420px] animate-pulse rounded-2xl border border-slate-800/60 bg-slate-900/60 lg:col-span-2" />
+						<div className="space-y-4">
+							<div className="h-[200px] animate-pulse rounded-2xl border border-slate-800/60 bg-slate-900/60" />
+							<div className="h-[200px] animate-pulse rounded-2xl border border-slate-800/60 bg-slate-900/60" />
+						</div>
+					</div>
+				</div>
+			) : (
+				<>
+					{/* KPI bentos — signups/converted/earned scope to the selected
+					    range; conversion rate is the program's all-time figure. */}
+					<div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+						<KpiTile
+							label="Signups"
+							icon={UserPlus}
+							hue="violet"
+							value={formatInteger(funnel?.signups ?? 0)}
+							secondary="joined via your link"
+							spark={signupSpark}
+						/>
+						<KpiTile
+							label="Converted"
+							icon={Users}
+							hue="sky"
+							value={formatInteger(funnel?.converted ?? 0)}
+							secondary="became paying customers"
+						/>
+						<KpiTile
+							label="Conversion rate"
+							icon={Percent}
+							hue="amber"
+							value={`${(conversionMetrics?.conversion_rate ?? 0).toFixed(1)}%`}
+							secondary="all-time, across referrals"
+						/>
+						<KpiTile
+							label="Earned"
+							icon={HandCoins}
+							hue="teal"
+							accent
+							value={formatNaira(funnel?.earning ?? 0, currency)}
+							secondary="commission in this period"
+							spark={earnedSpark}
+						/>
+					</div>
 
-          {/* Product Performance Chart */}
-          <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
-            <SectionHeader label="Breakdown" title="Product performance" />
-            {!productPerformance || productPerformance.length === 0 ? (
-              <EmptyState
-                icon={Package}
-                accent="teal"
-                title="No product data"
-                body="No product performance to show for this period. Try a wider date range."
-              />
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={productPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis
-                    dataKey="product_name"
-                    stroke="#94a3b8"
-                    tick={{ fill: "#94a3b8" }}
-                  />
-                  <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8" }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "8px",
-                      color: "#fff",
-                    }}
-                    formatter={(value) => [
-                      `₦${Number(value).toLocaleString()}`,
-                      "Commissions",
-                    ]}
-                  />
-                  <Bar dataKey="total_commissions" fill="#14b8a6" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
+					{/* Main grid — chart owns the left 2/3; funnel + product split
+					    ride the right rail. On mobile the funnel comes first. */}
+					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-[auto_1fr]">
+						<div className="order-2 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+							<StatsChartShell
+								title="Trends"
+								modes={MODES}
+								mode={mode}
+								onModeChange={setMode}
+								isEmpty={chartEmpty}
+								emptyText={
+									mode === "earnings"
+										? "No commissions credited in this period."
+										: "No referred signups in this period."
+								}
+								isLoading={chartLoading || chartFetching}
+								legendDefs={defs}
+							>
+								<ResponsiveContainer width="100%" height="100%">
+									{/* key={mode} remounts the chart per view — recharts v3
+									    carries a stale scale across children swaps. */}
+									<ComposedChart
+										key={mode}
+										data={chartData}
+										margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+									>
+										<defs>
+											<linearGradient id="affEarningsFill" x1="0" y1="0" x2="0" y2="1">
+												<stop offset="5%" stopColor={COLOR_EARNINGS} stopOpacity={0.25} />
+												<stop offset="95%" stopColor={COLOR_EARNINGS} stopOpacity={0} />
+											</linearGradient>
+										</defs>
+										<CartesianGrid stroke={CHART_GRID_STROKE} strokeWidth={1} vertical={false} />
+										<XAxis
+											dataKey="period"
+											tickFormatter={(d: string) => bucketTickLabel(d, range.granularity)}
+											tick={{ fill: CHART_TICK_FILL, fontSize: 11 }}
+											axisLine={false}
+											tickLine={false}
+											minTickGap={24}
+											interval="preserveStartEnd"
+										/>
+										<YAxis
+											width={48}
+											tick={{ fill: CHART_TICK_FILL, fontSize: 11 }}
+											axisLine={false}
+											tickLine={false}
+											domain={[0, "auto"]}
+											tickFormatter={(v: number) =>
+												mode === "earnings" ? `₦${fmtCompact(v)}` : fmtCompact(v)
+											}
+											allowDecimals={false}
+										/>
+										<Tooltip
+											cursor={
+												mode === "earnings"
+													? { stroke: "#475569", strokeWidth: 1 }
+													: { fill: "#1e293b", opacity: 0.4 }
+											}
+											content={
+												<StatsChartTooltip granularity={range.granularity} defs={defs} />
+											}
+										/>
+
+										{/* No animation on any mark — recharts v3 animation
+										    freezes mid-flight under StrictMode remounts. */}
+										{mode === "earnings" && (
+											<Area
+												type="monotone"
+												dataKey="earnings"
+												stroke={COLOR_EARNINGS}
+												strokeWidth={2}
+												fill="url(#affEarningsFill)"
+												isAnimationActive={false}
+											/>
+										)}
+										{mode === "signups" && (
+											<Bar
+												dataKey="signups"
+												fill={COLOR_SIGNUPS}
+												stroke="#020617"
+												strokeWidth={2}
+												maxBarSize={24}
+												radius={[4, 4, 0, 0]}
+												isAnimationActive={false}
+											/>
+										)}
+									</ComposedChart>
+								</ResponsiveContainer>
+							</StatsChartShell>
+						</div>
+
+						{/* Funnel — signups → paying → earned → paid, one quiet card. */}
+						<div className="order-1 rounded-2xl border border-slate-800/70 bg-slate-900/40 p-4 lg:order-none lg:col-start-3 lg:row-start-1">
+							<h2 className="text-sm font-medium text-slate-200">Funnel</h2>
+							{!funnel || (funnel.signups === 0 && funnel.earning === 0) ? (
+								<p className="mt-3 text-sm text-slate-500">
+									No referral activity in this period.
+								</p>
+							) : (
+								<div className="mt-3 space-y-3">
+									<FunnelRow
+										dot="#2dd4bf"
+										label="Signups"
+										value={formatInteger(funnel.signups)}
+										width={100}
+									/>
+									<FunnelRow
+										dot="#a78bfa"
+										label="Converted"
+										value={formatInteger(funnel.converted)}
+										rate={`${formatInteger(Math.round(funnel.signup_to_converted_rate))}% convert`}
+										width={safeRate(funnel.converted, funnel.signups)}
+									/>
+									<FunnelRow
+										dot="#fbbf24"
+										label="Earned"
+										value={formatNaira(funnel.earning, currency)}
+										width={100}
+									/>
+									<FunnelRow
+										dot="#34d399"
+										label="Paid out"
+										value={formatNaira(funnel.paid, currency)}
+										rate={`${formatInteger(Math.round(funnel.earning_to_paid_rate))}% paid out`}
+										width={safeRate(funnel.paid, funnel.earning)}
+									/>
+								</div>
+							)}
+						</div>
+
+						{/* By product — how the range's commissions split. */}
+						<div className="order-3 rounded-2xl border border-slate-800/70 bg-slate-900/40 p-4 lg:order-none lg:col-start-3 lg:row-start-2">
+							<h2 className="text-sm font-medium text-slate-200">By product</h2>
+							{topProducts.length === 0 ? (
+								<p className="mt-3 text-sm text-slate-500">
+									No commissions by product in this period.
+								</p>
+							) : (
+								<div className="mt-3 space-y-3">
+									{topProducts.map((p) => (
+										<div key={p.product_id}>
+											<div className="flex items-baseline gap-2 text-xs">
+												<span className="min-w-0 truncate text-slate-400">
+													{p.product_name}
+												</span>
+												<span className="ml-auto shrink-0 font-semibold tabular-nums text-slate-50">
+													{fmtNairaMain(p.total_commissions)}
+												</span>
+												<span className="w-16 shrink-0 text-right text-[11px] tabular-nums text-slate-500">
+													{formatInteger(p.commission_count)} sale
+													{p.commission_count === 1 ? "" : "s"}
+												</span>
+											</div>
+											<div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800/80">
+												<div
+													className="h-full rounded-full bg-teal-500/75"
+													style={{
+														width: `${Math.max(2, safeRate(p.total_commissions, productMax))}%`,
+													}}
+												/>
+											</div>
+										</div>
+									))}
+									{productPerformance.length > topProducts.length && (
+										<p className="text-[11px] text-slate-500">
+											+{productPerformance.length - topProducts.length} more product
+											{productPerformance.length - topProducts.length === 1 ? "" : "s"}
+										</p>
+									)}
+								</div>
+							)}
+						</div>
+					</div>
+				</>
+			)}
+		</div>
+	);
 }

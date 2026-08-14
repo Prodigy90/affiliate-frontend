@@ -26,7 +26,7 @@ export async function getEarningsTrend(params: {
   const response = await apiGet<EarningsTrendResponse>(
     `/analytics/earnings-trend?${queryParams.toString()}`
   );
-  return response.data;
+  return response.data ?? [];
 }
 
 export async function getSignupTrend(params: {
@@ -42,7 +42,7 @@ export async function getSignupTrend(params: {
   const response = await apiGet<SignupTrendResponse>(
     `/analytics/signup-trend?${queryParams.toString()}`
   );
-  return response.data;
+  return response.data ?? [];
 }
 
 export async function getProductPerformance(params: {
@@ -56,7 +56,7 @@ export async function getProductPerformance(params: {
   const response = await apiGet<ProductPerformanceResponse>(
     `/analytics/product-performance?${queryParams.toString()}`
   );
-  return response.data;
+  return response.data ?? [];
 }
 
 export async function getConversionMetrics(params: {
