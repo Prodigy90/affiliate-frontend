@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { UserMenu } from "./UserMenu";
-import { CopyLinkButton } from "./CopyLinkButton";
 import type { NavigationItem } from "./TopNav";
 
 /**
@@ -62,9 +61,6 @@ export function DockNav({ items }: { items: NavigationItem[] }) {
 						height={28}
 						className="rounded-lg"
 					/>
-					<span className="text-[15px] font-bold tracking-tight text-white">
-						WASBOT
-					</span>
 					<span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-300">
 						Affiliates
 					</span>
@@ -111,8 +107,7 @@ export function DockNav({ items }: { items: NavigationItem[] }) {
 				</nav>
 
 				{/* Pill 3 — Right cluster */}
-				<div className={pillClass("flex shrink-0 items-center gap-2 p-1")}>
-					<CopyLinkButton />
+				<div className={pillClass("flex shrink-0 items-center p-1")}>
 					<UserMenu />
 				</div>
 			</div>

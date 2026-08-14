@@ -44,9 +44,11 @@ function relativeTime(iso: string): string {
 }
 
 function FeedShell({ children }: { children: React.ReactNode }) {
+	// h-full + min-h-0 so the shell fills its grid column on the one-screen
+	// desktop dashboard; the list scrolls internally instead of growing the page.
 	return (
-		<section className="rounded-xl border border-slate-800/70 bg-slate-900/60">
-			<header className="flex items-baseline justify-between gap-3 border-b border-slate-800/50 px-4 py-3">
+		<section className="flex h-full min-h-0 flex-col rounded-xl border border-slate-800/70 bg-slate-900/60">
+			<header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-slate-800/50 px-4 py-3">
 				<h2 className="text-sm font-semibold tracking-tight text-slate-50">
 					Recent activity
 				</h2>
@@ -75,7 +77,7 @@ function LoadingRows() {
 
 function EmptyState() {
 	return (
-		<div className="flex flex-col items-center justify-center gap-2.5 px-4 py-7 text-center">
+		<div className="flex flex-1 flex-col items-center justify-center gap-2.5 px-4 py-7 text-center">
 			<div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-300 ring-1 ring-teal-500/30">
 				<UserPlus className="h-4 w-4" aria-hidden="true" />
 			</div>
@@ -89,7 +91,7 @@ function EmptyState() {
 
 function ErrorState() {
 	return (
-		<div className="px-4 py-3 text-center text-xs text-rose-200">
+		<div className="flex flex-1 items-center justify-center px-4 py-3 text-center text-xs text-rose-200">
 			Couldn&apos;t load activity. Refresh to try again.
 		</div>
 	);
@@ -153,7 +155,7 @@ export function ActivityFeed() {
 
 	return (
 		<FeedShell>
-			<ul className="divide-y divide-slate-800/50">
+			<ul className="min-h-0 flex-1 divide-y divide-slate-800/50 overflow-y-auto">
 				{events.map((event) => (
 					<EventRow key={event.id} event={event} />
 				))}

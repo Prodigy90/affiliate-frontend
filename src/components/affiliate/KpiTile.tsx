@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, type LucideIcon } from "lucide-react";
 
 import { Sparkline } from "@/components/shared/Sparkline";
@@ -70,6 +71,7 @@ export function KpiTile({
 	secondary,
 	spark,
 	accent = false,
+	href,
 }: {
 	label: string;
 	icon: LucideIcon;
@@ -90,19 +92,23 @@ export function KpiTile({
 	spark?: number[];
 	/** Teal-tint the value — reserve for the hero metric. */
 	accent?: boolean;
+	/** Renders the tile as a link — the whole card becomes the tap target. */
+	href?: string;
 }) {
 	const up = delta != null && delta > 0;
 	const down = delta != null && delta < 0;
 	const h = HUE[hue];
 	const showSpark = !!spark && spark.length >= 2;
 
-	return (
-		<div
-			className={cn(
-				"group relative min-w-0 overflow-hidden rounded-xl border border-slate-800/70 bg-slate-900/60 p-3.5 transition-all duration-200 hover:-translate-y-0.5 sm:p-4",
-				h.hoverBorder,
-			)}
-		>
+	const rootClass = cn(
+		"group relative block min-w-0 overflow-hidden rounded-xl border border-slate-800/70 bg-slate-900/60 p-3.5 transition-all duration-200 hover:-translate-y-0.5 sm:p-4",
+		href &&
+			"cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50",
+		h.hoverBorder,
+	);
+
+	const inner = (
+		<>
 			<div
 				className="pointer-events-none absolute -inset-1/2 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 				style={{ background: `radial-gradient(ellipse at 30% 0%, ${h.glow}, transparent 60%)` }}
@@ -162,6 +168,16 @@ export function KpiTile({
 					</div>
 				)}
 			</div>
-		</div>
+		</>
 	);
+
+	if (href) {
+		return (
+			<Link href={href} className={rootClass}>
+				{inner}
+			</Link>
+		);
+	}
+
+	return <div className={rootClass}>{inner}</div>;
 }

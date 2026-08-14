@@ -3,12 +3,11 @@
 import Link from "next/link";
 
 import { UserMenu } from "./UserMenu";
-import { CopyLinkButton } from "./CopyLinkButton";
 
 /**
- * Slim top bar for mobile breakpoints — logo + copy-link chip + user menu.
- * Primary navigation lives in the BottomTabBar on this breakpoint, so this
- * header carries no nav links. Mirrors wasbot-frontend's MobileTopBar.
+ * Slim top bar for mobile breakpoints — logo + user menu. Primary navigation
+ * lives in the BottomTabBar on this breakpoint, so this header carries no nav
+ * links. Mirrors wasbot-frontend's MobileTopBar.
  */
 export function MobileTopBar() {
 	return (
@@ -23,16 +22,12 @@ export function MobileTopBar() {
 						height={28}
 						className="rounded-lg"
 					/>
-					<span className="text-[15px] font-bold tracking-tight text-white">
-						WASBOT
-					</span>
 					<span className="rounded-full bg-teal-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-teal-300">
 						Affiliates
 					</span>
 				</Link>
 
-				<div className="ml-auto flex shrink-0 items-center gap-2">
-					<CopyLinkButton compact />
+				<div className="ml-auto flex shrink-0 items-center">
 					<UserMenu />
 				</div>
 			</div>

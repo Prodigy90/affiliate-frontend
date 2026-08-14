@@ -28,7 +28,7 @@ export function UpcomingPayoutCard({ data }: { data: EarningsSummary }) {
 					: `${formatNaira(remainingToMin, currency)} more until you can cash out (₦5,000 minimum).`}
 			</p>
 			<Link
-				href="/affiliate/payouts"
+				href="/affiliate/earnings"
 				className={`mt-2.5 inline-flex items-center gap-1 text-xs font-semibold transition ${
 					meetsMin
 						? "text-teal-300 hover:text-teal-200"

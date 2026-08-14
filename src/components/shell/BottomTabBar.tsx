@@ -52,16 +52,6 @@ function CommissionsIcon(p: IconProps) {
 	);
 }
 
-function PayoutsIcon(p: IconProps) {
-	return (
-		<svg {...svgProps(p)} aria-hidden="true">
-			<rect x="3" y="6" width="18" height="13" rx="2" />
-			<path d="M3 10h18" />
-			<circle cx="16.5" cy="14.5" r="1.25" />
-		</svg>
-	);
-}
-
 function AnalyticsIcon(p: IconProps) {
 	return (
 		<svg {...svgProps(p)} aria-hidden="true">
@@ -79,8 +69,7 @@ interface Tab {
 const TABS: Tab[] = [
 	{ label: "Home", href: "/affiliate/dashboard", Icon: HomeIcon },
 	{ label: "Promo Kit", href: "/affiliate/assets", Icon: PromoKitIcon },
-	{ label: "Commissions", href: "/affiliate/commissions", Icon: CommissionsIcon },
-	{ label: "Payouts", href: "/affiliate/payouts", Icon: PayoutsIcon },
+	{ label: "Earnings", href: "/affiliate/earnings", Icon: CommissionsIcon },
 	{ label: "Analytics", href: "/affiliate/analytics", Icon: AnalyticsIcon },
 ];
 
