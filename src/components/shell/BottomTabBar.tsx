@@ -80,6 +80,27 @@ function SettingsIcon(p: IconProps) {
 	);
 }
 
+function PayoutsIcon(p: IconProps) {
+	return (
+		<svg {...svgProps(p)} aria-hidden="true">
+			<rect x="3" y="7" width="18" height="11" rx="2" />
+			<circle cx="12" cy="12.5" r="2.5" />
+			<path d="M6.5 10.5v4M17.5 10.5v4" />
+		</svg>
+	);
+}
+
+function AffiliatesIcon(p: IconProps) {
+	return (
+		<svg {...svgProps(p)} aria-hidden="true">
+			<circle cx="9" cy="8.5" r="3.5" />
+			<path d="M3.5 19.5c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+			<path d="M16 5.6a3.5 3.5 0 0 1 0 5.8" />
+			<path d="M17.5 14.8c1.8.8 3 2.3 3 4.7" />
+		</svg>
+	);
+}
+
 interface Tab {
 	label: string;
 	href: string;
@@ -95,12 +116,29 @@ const TABS: Tab[] = [
 	{ label: "Settings", href: "/affiliate/settings", Icon: SettingsIcon },
 ];
 
-export function BottomTabBar() {
+// Admin tab set lives here (not in the server layout) because Icon components
+// aren't serializable across the server → client boundary; the layout picks a
+// set via the string `variant` prop instead.
+const ADMIN_TABS: Tab[] = [
+	{ label: "Dashboard", href: "/admin", Icon: HomeIcon },
+	{ label: "Payouts", href: "/admin/payouts", Icon: PayoutsIcon },
+	{ label: "Affiliates", href: "/admin/affiliates", Icon: AffiliatesIcon },
+	{ label: "Products", href: "/admin/products", Icon: ProductsIcon },
+];
+
+export type ShellVariant = "affiliate" | "admin";
+
+export function BottomTabBar({
+	variant = "affiliate",
+}: {
+	variant?: ShellVariant;
+}) {
 	const pathname = usePathname();
+	const tabs = variant === "admin" ? ADMIN_TABS : TABS;
 
 	// Match against most-specific href first. Routes outside the primary set
 	// simply show no active tab — same behavior as wasbot-frontend's /billing.
-	const sorted = [...TABS].sort((a, b) => b.href.length - a.href.length);
+	const sorted = [...tabs].sort((a, b) => b.href.length - a.href.length);
 	const activeHref = sorted.find(
 		(t) => pathname === t.href || pathname?.startsWith(t.href + "/")
 	)?.href;
@@ -114,7 +152,7 @@ export function BottomTabBar() {
 				className="flex items-stretch justify-around px-1 pt-1.5"
 				style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
 			>
-				{TABS.map((tab) => {
+				{tabs.map((tab) => {
 					const active = activeHref === tab.href;
 					const { Icon } = tab;
 					return (

@@ -84,7 +84,7 @@ export function PaginationBar({
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value) as PageSize)}
-            className="h-7 rounded-md border border-slate-700 bg-slate-950/80 px-2 text-[11px] text-slate-100 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+            className="h-7 rounded-md border border-slate-700 bg-slate-800/80 px-2 text-[11px] text-slate-100 outline-none focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/40"
             aria-label="Rows per page"
           >
             {PAGE_SIZE_OPTIONS.map((size) => (
@@ -95,7 +95,7 @@ export function PaginationBar({
           </select>
         </label>
 
-        <div className="flex items-center gap-1">
+        <div className="inline-flex items-center gap-0.5 rounded-lg border border-slate-800/70 bg-slate-950/60 p-0.5">
           <PageButton
             disabled={page <= 1}
             onClick={() => onPageChange(Math.max(1, page - 1))}
@@ -156,8 +156,8 @@ function PageButton({
       className={
         "inline-flex h-7 min-w-[28px] items-center justify-center rounded-md px-2 text-[11px] font-medium transition-colors " +
         (active
-          ? "bg-teal-500 text-slate-950 shadow-sm shadow-teal-500/20"
-          : "border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-slate-900")
+          ? "bg-teal-500/15 font-semibold text-teal-300"
+          : "text-slate-400 hover:text-slate-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-slate-400")
       }
     >
       {children}

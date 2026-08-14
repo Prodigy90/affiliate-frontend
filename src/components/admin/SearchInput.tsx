@@ -67,7 +67,7 @@ export function SearchInput({
         }}
         placeholder={placeholder}
         aria-label={ariaLabel ?? placeholder}
-        className="w-full rounded-md border border-slate-700 bg-slate-950/60 py-2 pl-9 pr-9 text-sm text-slate-100 placeholder-slate-500 outline-none transition-colors focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+        className="w-full rounded-lg border border-slate-700 bg-slate-800/80 py-2.5 pl-9 pr-9 text-sm text-white placeholder:text-slate-500 outline-none transition-colors focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/40"
       />
       {showClear && (
         <button
@@ -77,7 +77,7 @@ export function SearchInput({
             onChange("");
           }}
           aria-label="Clear search"
-          className="absolute right-2 inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200"
+          className="absolute right-2 inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-700 hover:text-slate-200"
         >
           <X className="h-3.5 w-3.5" />
         </button>

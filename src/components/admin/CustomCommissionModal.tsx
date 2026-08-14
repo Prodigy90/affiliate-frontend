@@ -73,7 +73,7 @@ type CustomCommissionModalProps = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
+  "mt-1 w-full rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-50 outline-none ring-0 transition-colors focus:border-teal-500/60 focus:ring-1 focus:ring-teal-500/40";
 
 export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionModalProps) {
   const queryClient = useQueryClient();
@@ -204,7 +204,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
   const isError = isErrorProducts || isErrorRates;
 
   return (
-    <Modal isOpen title={`Custom commission — ${affiliate.name || affiliate.email}`} onClose={onClose}>
+    <Modal isOpen title={`Custom commission for ${affiliate.name || affiliate.email}`} onClose={onClose}>
       {isLoading ? (
         <div className="space-y-2 py-2">
           <div className="h-4 w-1/2 animate-pulse rounded bg-slate-800/70" />
@@ -226,7 +226,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
         <div className="space-y-4">
           {products.length > 1 ? (
             <div className="space-y-1 text-xs text-slate-200">
-              <label className="block">Product</label>
+              <label className="mb-1 block text-xs font-medium text-slate-300">Product</label>
               <select
                 className={inputClass}
                 value={selectedProductId}
@@ -268,7 +268,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
           <form className="space-y-3" onSubmit={handleSubmit(onSubmit, onFormError)}>
             <div className="grid gap-3 grid-cols-2">
               <div className="space-y-1 text-xs text-slate-200">
-                <label className="block">Base rate (%)</label>
+                <label className="mb-1 block text-xs font-medium text-slate-300">Base rate (%)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -283,7 +283,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
                 )}
               </div>
               <div className="space-y-1 text-xs text-slate-200">
-                <label className="block">Max payments</label>
+                <label className="mb-1 block text-xs font-medium text-slate-300">Max payments</label>
                 <input
                   type="number"
                   min={0}
@@ -300,7 +300,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
 
             <div className="grid gap-3 grid-cols-2">
               <div className="space-y-1 text-xs text-slate-200">
-                <label className="block">Recurring rate (%)</label>
+                <label className="mb-1 block text-xs font-medium text-slate-300">Recurring rate (%)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -315,7 +315,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
                 )}
               </div>
               <div className="space-y-1 text-xs text-slate-200">
-                <label className="block">One-time rate (%)</label>
+                <label className="mb-1 block text-xs font-medium text-slate-300">One-time rate (%)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -331,7 +331,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
               </div>
             </div>
 
-            <div className="space-y-2 rounded-md border border-slate-800 bg-slate-950/40 p-3">
+            <div className="space-y-2 rounded-lg border border-slate-700/60 bg-slate-800/40 p-3">
               <label className="flex items-center gap-2 text-xs text-slate-200">
                 <input
                   type="checkbox"
@@ -342,7 +342,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
               </label>
               {watchLifetimeEnabled && (
                 <div className="space-y-1 text-xs text-slate-200">
-                  <label className="block">Lifetime rate (%)</label>
+                  <label className="mb-1 block text-xs font-medium text-slate-300">Lifetime rate (%)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -360,7 +360,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
             </div>
 
             <div className="space-y-1 text-xs text-slate-200">
-              <label className="block">Notes</label>
+              <label className="mb-1 block text-xs font-medium text-slate-300">Notes</label>
               <textarea
                 rows={2}
                 placeholder="Why this affiliate gets a custom rate…"
@@ -385,7 +385,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
                         type="button"
                         disabled={removeMutation.isPending}
                         onClick={() => removeMutation.mutate()}
-                        className="rounded-full bg-red-500/20 px-3 py-1 text-[11px] font-medium text-red-200 hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-full border border-rose-500/30 bg-rose-500/15 px-3 py-1 text-[11px] font-medium text-rose-300 hover:bg-rose-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {removeMutation.isPending ? "Removing…" : "Confirm"}
                       </button>
@@ -401,7 +401,7 @@ export function CustomCommissionModal({ affiliate, onClose }: CustomCommissionMo
                     <button
                       type="button"
                       onClick={() => setConfirmingRemove(true)}
-                      className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:bg-slate-700"
+                      className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-100 hover:border-rose-500/40 hover:bg-slate-700"
                     >
                       Remove override
                     </button>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+	ArrowLeftRight,
 	ChevronDown,
 	Clapperboard,
 	Link2,
@@ -150,14 +151,25 @@ export function UserMenu() {
 
 					{isAdmin && (
 						<div className="border-b border-slate-800/70 py-1">
-							<Link
-								href="/admin"
-								className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-amber-400 hover:bg-slate-800/70"
-								onClick={() => setOpen(false)}
-							>
-								<Shield className="h-4 w-4" aria-hidden="true" />
-								Admin Dashboard
-							</Link>
+							{pathname?.startsWith("/admin") ? (
+								<Link
+									href="/affiliate/dashboard"
+									className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-teal-300 hover:bg-slate-800/70"
+									onClick={() => setOpen(false)}
+								>
+									<ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+									Affiliate dashboard
+								</Link>
+							) : (
+								<Link
+									href="/admin"
+									className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-amber-400 hover:bg-slate-800/70"
+									onClick={() => setOpen(false)}
+								>
+									<Shield className="h-4 w-4" aria-hidden="true" />
+									Admin dashboard
+								</Link>
+							)}
 						</div>
 					)}
 

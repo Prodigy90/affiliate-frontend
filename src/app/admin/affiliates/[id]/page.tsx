@@ -3,16 +3,16 @@
 import { use, useCallback, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Coins, UserPlus } from "lucide-react";
+import { ArrowLeft, Coins, HandCoins, UserPlus, Wallet } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 
 import { getAdminAffiliateEarnings } from "@/lib/api/admin";
 import type { EarningsSummary } from "@/lib/types/affiliate";
 import type { PageProps } from "@/lib/types/session";
 import {
-  formatCurrency,
   formatDate,
   formatInteger,
+  formatNaira,
   shortenId,
 } from "@/lib/utils/format";
 import { StatusBadge } from "@/components/status-badge";
@@ -29,6 +29,27 @@ import {
 } from "@/components/admin/PaginationBar";
 import { usePaginatedAdminAffiliateCommissions } from "@/lib/hooks/use-paginated-affiliate-commissions";
 import { usePaginatedAdminAffiliateSignups } from "@/lib/hooks/use-paginated-affiliate-signups";
+
+/** "Ada Lovelace" -> "AL", falls back to "?" for an empty name. */
+function getInitials(name: string): string {
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+  return initials || "?";
+}
+
+/** ID chip — a quiet mono badge, reused for trace IDs in the signups table. */
+function IdChip({ id }: { id: string }) {
+  return (
+    <span className="rounded-md bg-slate-800/70 px-1.5 py-0.5 font-mono text-[11px] text-slate-400">
+      {id}
+    </span>
+  );
+}
 
 export default function AdminAffiliateDetailPage({ params }: PageProps) {
   const { id } = use(params);
@@ -172,37 +193,74 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300/80">
-          Admin · Affiliate detail
+        <Link
+          href="/admin/affiliates"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 transition-colors hover:text-teal-300"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          Back to affiliates
+        </Link>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-400">
+          Affiliate
         </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
           {earnings.affiliate_name}
         </h1>
-        <p className="max-w-xl text-sm text-slate-300">
+        <p className="max-w-xl text-sm text-slate-400">
           Overview of this affiliate&apos;s earnings and commission history.
         </p>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total earned"
-          value={formatCurrency(earnings.total_earnings, currency)}
+      {/* Identity + earnings hero — the admin-facing sibling of the affiliate
+          settings identity row. The admin earnings endpoint only returns the
+          name and totals (no email/role/status/avatar), so the hero sticks to
+          what's actually fetched here. */}
+      <section className="relative overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-900/60 p-5">
+        <div
+          className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-teal-500/10 blur-3xl"
+          aria-hidden="true"
         />
-        <StatCard
-          title="Pending balance"
-          value={formatCurrency(earnings.pending_balance, currency)}
-        />
-        <StatCard
-          title="Available for payout"
-          value={formatCurrency(earnings.available_for_payout, currency)}
-        />
-        <StatCard
-          title="Referred signups"
-          value={isLoadingSignups ? "…" : isErrorSignups ? "—" : formatInteger(signupsTotal)}
-        />
+        <div className="relative flex min-w-0 items-center gap-3.5">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-lg font-semibold text-teal-400 ring-2 ring-teal-500/30">
+            {getInitials(earnings.affiliate_name)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold text-slate-50">
+              {earnings.affiliate_name}
+            </p>
+            <p className="truncate text-xs text-slate-500">
+              Affiliate <IdChip id={shortenId(earnings.affiliate_id)} />
+            </p>
+          </div>
+        </div>
+
+        <div className="relative mt-5 flex flex-wrap gap-x-8 gap-y-4 border-t border-slate-800/50 pt-4">
+          <StatBlock
+            icon={Coins}
+            label="Total earned"
+            value={formatNaira(earnings.total_earnings, currency)}
+          />
+          <StatBlock
+            icon={HandCoins}
+            label="Pending balance"
+            value={formatNaira(earnings.pending_balance, currency)}
+          />
+          <StatBlock
+            icon={Wallet}
+            label="Available for payout"
+            value={formatNaira(earnings.available_for_payout, currency)}
+          />
+          <StatBlock
+            icon={UserPlus}
+            label="Referred signups"
+            value={
+              isLoadingSignups ? "…" : isErrorSignups ? "—" : formatInteger(signupsTotal)
+            }
+          />
+        </div>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+      <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
             Commission history
@@ -258,17 +316,17 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
                     {
                       label: "Payment",
                       value: (
-                        <span>
+                        <span className="font-mono tabular-nums">
                           #{c.payment_number} ·{" "}
-                          {formatCurrency(c.payment_amount, c.currency)}
+                          {formatNaira(c.payment_amount, c.currency)}
                         </span>
                       ),
                     },
                     {
                       label: "Commission",
                       value: (
-                        <span className="font-semibold text-teal-300">
-                          {formatCurrency(c.commission_amount, c.currency)}
+                        <span className="font-mono font-semibold tabular-nums text-teal-300">
+                          {formatNaira(c.commission_amount, c.currency)}
                         </span>
                       ),
                     },
@@ -284,50 +342,63 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
 
             {/* Desktop: table (>=sm). */}
             <div className="hidden overflow-x-auto sm:block">
-            <table className="min-w-full text-left text-xs text-slate-200">
-              <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                <tr>
-                  <th className="px-2 py-2">Product</th>
-                  <th className="px-2 py-2">Payment</th>
-                  <th className="px-2 py-2">Commission</th>
-                  <th className="px-2 py-2">Status</th>
-                  <th className="px-2 py-2">Paid at</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/80">
-                {commissions.map((c) => (
-                  <tr key={c.id} className="align-middle">
-                    <td className="px-2 py-2">
-                      <p className="text-xs font-medium text-slate-100">
-                        {c.product.name}
-                      </p>
-                      <p className="text-[11px] text-slate-400">{c.plan_name}</p>
-                    </td>
-                    <td className="px-2 py-2">
-                      <p className="text-xs text-slate-200">
-                        Payment {c.payment_number}
-                      </p>
-                      <p className="text-[11px] text-slate-400">
-                        {formatCurrency(c.payment_amount, c.currency)}
-                      </p>
-                    </td>
-                    <td className="px-2 py-2">
-                      <p className="text-xs font-semibold text-teal-300">
-                        {formatCurrency(c.commission_amount, c.currency)}
-                      </p>
-                    </td>
-                    <td className="px-2 py-2">
-                      <StatusBadge status={c.status} variant="commission" />
-                    </td>
-                    <td className="px-2 py-2">
-                      <p className="text-xs text-slate-200">
-                        {formatDate(c.paid_at)}
-                      </p>
-                    </td>
+              <table className="min-w-full text-left text-xs text-slate-200">
+                <thead className="border-b border-slate-800/70">
+                  <tr>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Product
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Payment
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Commission
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Status
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Paid at
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {commissions.map((c) => (
+                    <tr
+                      key={c.id}
+                      className="border-b border-slate-800/50 align-middle transition-colors last:border-0 hover:bg-slate-800/30"
+                    >
+                      <td className="px-3 py-3">
+                        <p className="text-xs font-medium text-slate-100">
+                          {c.product.name}
+                        </p>
+                        <p className="text-[11px] text-slate-400">{c.plan_name}</p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <p className="text-xs text-slate-200">
+                          Payment {c.payment_number}
+                        </p>
+                        <p className="font-mono text-[11px] tabular-nums text-slate-400">
+                          {formatNaira(c.payment_amount, c.currency)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <p className="font-mono text-xs font-semibold tabular-nums text-teal-300">
+                          {formatNaira(c.commission_amount, c.currency)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-3">
+                        <StatusBadge status={c.status} variant="commission" />
+                      </td>
+                      <td className="px-3 py-3">
+                        <p className="text-xs text-slate-200">
+                          {formatDate(c.paid_at)}
+                        </p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </>
         )}
@@ -347,7 +418,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
         )}
       </section>
 
-      <section className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+      <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
             Referred signups
@@ -385,11 +456,7 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
               {signups.map((s) => (
                 <StackedCard
                   key={s.id}
-                  title={
-                    <span className="font-mono text-xs">
-                      {s.trace_id ? shortenId(s.trace_id) : shortenId(s.id)}
-                    </span>
-                  }
+                  title={<IdChip id={s.trace_id ? shortenId(s.trace_id) : shortenId(s.id)} />}
                   fields={[
                     { label: "Occurred", value: formatDate(s.occurred_at) },
                     { label: "Tracked", value: formatDate(s.created_at) },
@@ -401,27 +468,34 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
             {/* Desktop: table (>=sm). */}
             <div className="hidden overflow-x-auto sm:block">
               <table className="min-w-full text-left text-xs text-slate-200">
-                <thead className="border-b border-slate-800/80 text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                <thead className="border-b border-slate-800/70">
                   <tr>
-                    <th className="px-2 py-2">Trace ID</th>
-                    <th className="px-2 py-2">Occurred</th>
-                    <th className="px-2 py-2">Tracked</th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Trace ID
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Occurred
+                    </th>
+                    <th className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      Tracked
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80">
+                <tbody>
                   {signups.map((s) => (
-                    <tr key={s.id} className="align-middle">
-                      <td className="px-2 py-2">
-                        <span className="font-mono text-[11px] text-slate-300">
-                          {s.trace_id ? shortenId(s.trace_id) : shortenId(s.id)}
-                        </span>
+                    <tr
+                      key={s.id}
+                      className="border-b border-slate-800/50 align-middle transition-colors last:border-0 hover:bg-slate-800/30"
+                    >
+                      <td className="px-3 py-3">
+                        <IdChip id={s.trace_id ? shortenId(s.trace_id) : shortenId(s.id)} />
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-3 py-3">
                         <p className="text-xs text-slate-200">
                           {formatDate(s.occurred_at)}
                         </p>
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-3 py-3">
                         <p className="text-xs text-slate-200">
                           {formatDate(s.created_at)}
                         </p>
@@ -451,19 +525,26 @@ export default function AdminAffiliateDetailPage({ params }: PageProps) {
   );
 }
 
-type StatCardProps = {
-  title: string;
+type StatBlockProps = {
+  icon: typeof Coins;
+  label: string;
   value: string;
 };
 
-function StatCard({ title, value }: StatCardProps) {
+/** Icon-chip stat block — the settings page's FactBlock pattern, sized for money. */
+function StatBlock({ icon: Icon, label, value }: StatBlockProps) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-slate-800/70 bg-slate-900/60 px-4 py-4 shadow-sm">
-      <div className="relative space-y-1">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-          {title}
+    <div className="flex items-start gap-2.5">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/70 text-teal-400">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          {label}
         </p>
-        <p className="text-lg font-semibold text-slate-50">{value}</p>
+        <p className="font-mono text-base font-semibold tabular-nums text-slate-50">
+          {value}
+        </p>
       </div>
     </div>
   );
