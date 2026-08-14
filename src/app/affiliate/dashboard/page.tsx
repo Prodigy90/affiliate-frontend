@@ -138,10 +138,12 @@ export default function AffiliateDashboardPage() {
 		signupsDelta = pctDelta(current7, previous7);
 	}
 
+	// Always give the Paying tile a subtitle — on an empty account the bare
+	// count reads as cryptic. Upgrades to the conversion rate once signups exist.
 	const conversionSecondary =
 		funnel && funnelSignups > 0
 			? `${formatInteger(Math.round(funnel.signup_to_converted_rate))}% of signups convert`
-			: undefined;
+			: "referrals now subscribed";
 
 	return (
 		// On lg+ the page is sized to the viewport (minus the shell's dock/frame
