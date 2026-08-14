@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
 	Area,
@@ -44,6 +44,8 @@ import { formatInteger, formatNaira } from "@/lib/utils/format";
  * Chart mark colors follow the wasbot dataviz picks against #020617:
  * teal #0d9488 for money (the hero metric), indigo #6366f1 for signups.
  */
+
+const emptySubscribe = () => () => {};
 
 const COLOR_EARNINGS = "#0d9488";
 const COLOR_SIGNUPS = "#6366f1";
@@ -113,6 +115,17 @@ function FunnelRow({
 
 export default function AnalyticsPage() {
 	const { isAuthenticated, isLoading: authLoading } = useAffiliate();
+
+	// Hydration gate: the server (and the prerendered static shell) resolves
+	// auth and the disabled queries as "not loading" and bakes the loaded
+	// branch, while the client's first paint starts loading — so gate on
+	// hydration, where both sides see the server snapshot (false) and agree
+	// on the skeleton. React re-renders with the client snapshot right after.
+	const mounted = useSyncExternalStore(
+		emptySubscribe,
+		() => true,
+		() => false,
+	);
 
 	// One resolved range object scopes everything on the page. Granularity
 	// auto-picks from the span — no separate granularity selector.
@@ -198,9 +211,8 @@ export default function AnalyticsPage() {
 	const earnedSpark = useMemo(() => chartData.map((d) => d.earnings), [chartData]);
 	const signupSpark = useMemo(() => chartData.map((d) => d.signups), [chartData]);
 
-	// authLoading leads the gate: the server (and the client's first paint)
-	// both resolve it as pending, so SSR and hydration agree on the skeleton.
 	const isLoading =
+		!mounted ||
 		authLoading ||
 		isLoadingTrend ||
 		isLoadingProducts ||
