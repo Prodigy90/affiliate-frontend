@@ -73,9 +73,14 @@ export type AffiliateProduct = {
   product_id: string;
   name: string;
   description: string;
+  /** Legacy seed value — NOT enforced. Prefer commission_rate when present. */
   base_commission_rate: number;
   max_commission_payments?: number | null;
   status: string;
+  /** The enforced commission_configs.default_rate (absent = no config). */
+  commission_rate?: number;
+  /** Enforced payment cap; absent with commission_rate present = unlimited. */
+  commission_max_payments?: number | null;
   enrollment?: AffiliateProductEnrollment | null;
 };
 
