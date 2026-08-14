@@ -64,13 +64,21 @@ const VIDEOS: PromoVideo[] = [
 	},
 	{
 		file: "phone-free-hook-1",
-		title: "Post without your phone",
+		title: "Post without your phone (hook 1)",
 		bestFor: "People tired of posting status by hand.",
 		duration: "0:27",
 		size: "7.7MB",
 		category: "status",
 		winner: true,
 		winnerReason: "Held attention longest of anything we've tested.",
+	},
+	{
+		file: "phone-free-hook-2",
+		title: "Post without your phone (hook 2)",
+		bestFor: "Same ad, different opening line.",
+		duration: "0:36",
+		size: "9.8MB",
+		category: "status",
 	},
 	{
 		file: "groups-hook-a",
@@ -118,15 +126,6 @@ const VIDEOS: PromoVideo[] = [
 		isNew: true,
 	},
 	{
-		file: "contacts-hook-c",
-		title: "Contacts & audience building (hook C)",
-		bestFor: "The status-gap opening. Where did the viewers go?",
-		duration: "1:22",
-		size: "9.0MB",
-		category: "contacts",
-		isNew: true,
-	},
-	{
 		file: "sequences-hook-a",
 		title: "Follow-ups that close sales (hook A)",
 		bestFor: "The 'how much' price-list flood opening. Founder-voiced.",
@@ -156,7 +155,8 @@ const VIDEOS: PromoVideo[] = [
 ];
 
 // Folder display order for the Videos tab.
-const CATEGORY_ORDER: Category[] = ["pitch", "status", "groups", "contacts", "sequences"];
+// The pitch category has no folder — its only video is the pinned winner up top.
+const CATEGORY_ORDER: Category[] = ["status", "groups", "contacts", "sequences"];
 
 const FALLBACK_LINK = "https://wasbot.app";
 
