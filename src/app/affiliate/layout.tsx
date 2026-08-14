@@ -6,15 +6,16 @@ type AffiliateLayoutProps = {
 	children: ReactNode;
 };
 
-// Primary nav — five destinations, matching the mobile tab bar 1:1.
-// Products is where new affiliates register for a product, so it stays in the
-// primary nav; Settings lives in the user menu dropdown.
+// Primary nav — matches the mobile tab bar 1:1. Ordered by the affiliate
+// journey: join a product, watch the money, grab assets, check numbers,
+// then account config last.
 const navItems: NavigationItem[] = [
 	{ href: "/affiliate/dashboard", label: "Dashboard" },
-	{ href: "/affiliate/assets", label: "Promo Kit" },
-	{ href: "/affiliate/earnings", label: "Earnings" },
 	{ href: "/affiliate/products", label: "Products" },
+	{ href: "/affiliate/earnings", label: "Earnings" },
+	{ href: "/affiliate/assets", label: "Promo Kit" },
 	{ href: "/affiliate/analytics", label: "Analytics" },
+	{ href: "/affiliate/settings", label: "Settings" },
 ];
 
 export default function AffiliateLayout({ children }: AffiliateLayoutProps) {
