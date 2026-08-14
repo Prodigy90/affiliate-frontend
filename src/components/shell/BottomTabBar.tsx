@@ -52,12 +52,13 @@ function CommissionsIcon(p: IconProps) {
 	);
 }
 
-function PayoutsIcon(p: IconProps) {
+function ProductsIcon(p: IconProps) {
 	return (
 		<svg {...svgProps(p)} aria-hidden="true">
-			<rect x="3" y="6" width="18" height="13" rx="2" />
-			<path d="M3 10h18" />
-			<circle cx="16.5" cy="14.5" r="1.25" />
+			<rect x="4" y="4" width="7" height="7" rx="1.5" />
+			<rect x="13" y="4" width="7" height="7" rx="1.5" />
+			<rect x="4" y="13" width="7" height="7" rx="1.5" />
+			<rect x="13" y="13" width="7" height="7" rx="1.5" />
 		</svg>
 	);
 }
@@ -79,8 +80,8 @@ interface Tab {
 const TABS: Tab[] = [
 	{ label: "Home", href: "/affiliate/dashboard", Icon: HomeIcon },
 	{ label: "Promo Kit", href: "/affiliate/assets", Icon: PromoKitIcon },
-	{ label: "Commissions", href: "/affiliate/commissions", Icon: CommissionsIcon },
-	{ label: "Payouts", href: "/affiliate/payouts", Icon: PayoutsIcon },
+	{ label: "Earnings", href: "/affiliate/earnings", Icon: CommissionsIcon },
+	{ label: "Products", href: "/affiliate/products", Icon: ProductsIcon },
 	{ label: "Analytics", href: "/affiliate/analytics", Icon: AnalyticsIcon },
 ];
 
@@ -88,7 +89,7 @@ export function BottomTabBar() {
 	const pathname = usePathname();
 
 	// Match against most-specific href first. Routes outside the primary set
-	// (settings, products) simply show no active tab — same behavior as
+	// (settings) simply show no active tab — same behavior as
 	// wasbot-frontend's /billing.
 	const sorted = [...TABS].sort((a, b) => b.href.length - a.href.length);
 	const activeHref = sorted.find(

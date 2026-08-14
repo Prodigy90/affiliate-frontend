@@ -13,10 +13,11 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Banknote, ChevronRight, HandCoins, Package, UserPlus, Users } from "lucide-react";
+import { Banknote, ChevronRight, HandCoins, Package, Percent, UserPlus, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { StatCard } from "@/components/stat-card";
+import { KpiTile } from "@/components/affiliate/KpiTile";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import {
   getEarningsTrend,
@@ -26,7 +27,7 @@ import {
   getSignupTrend,
 } from "@/lib/api/analytics";
 import type { FunnelData } from "@/lib/types/analytics";
-import { formatCurrency, formatInteger } from "@/lib/utils/format";
+import { formatInteger, formatNaira } from "@/lib/utils/format";
 
 type FunnelAccent = "teal" | "violet" | "amber" | "emerald";
 
@@ -146,7 +147,7 @@ function RangedFunnel({ funnel }: { funnel: FunnelData }) {
     },
     {
       label: "Earning",
-      value: formatCurrency(funnel.earning, currency),
+      value: formatNaira(funnel.earning, currency),
       caption: "Commission credited",
       icon: HandCoins,
       accent: "amber",
@@ -154,7 +155,7 @@ function RangedFunnel({ funnel }: { funnel: FunnelData }) {
     },
     {
       label: "Paid",
-      value: formatCurrency(funnel.paid, currency),
+      value: formatNaira(funnel.paid, currency),
       caption: "Cashed out to you",
       icon: Banknote,
       accent: "emerald",
@@ -165,9 +166,9 @@ function RangedFunnel({ funnel }: { funnel: FunnelData }) {
   return (
     <section
       aria-label="Referral funnel for selected range"
-      className="bg-slate-900 p-6 rounded-lg border border-slate-800"
+      className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6"
     >
-      <h2 className="text-xl font-bold text-white mb-6">Referral Funnel</h2>
+      <SectionHeader label="Funnel" title="Referral funnel" />
       <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-stretch">
         <RangedFunnelCard stage={stages[0]} />
         <FunnelConnector rate={funnel.signup_to_converted_rate} note="convert" />
@@ -253,7 +254,7 @@ export default function AnalyticsPage() {
     staleTime: 30_000,
   });
 
-  // Fetch funnel over the selected date range (the dashboard FunnelStrip uses
+  // Fetch funnel over the selected date range (the dashboard KPI tiles use
   // the default window; here we pass the page's range so it stays in sync).
   const {
     data: funnel,
@@ -322,17 +323,23 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white">Analytics</h1>
-        <p className="text-slate-400 mt-2">
-          Track your performance and earnings over time
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300/80">
+          Analytics
         </p>
-      </div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-50 md:text-3xl">
+          Track your performance and earnings over time.
+        </h1>
+        <p className="max-w-xl text-sm text-slate-300">
+          Filter by date range and granularity to see how your referrals and
+          commissions are trending.
+        </p>
+      </section>
 
       {/* Date Range Filters */}
-      <div className="bg-slate-900 p-6 rounded-lg border border-slate-800">
+      <div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
         <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-50">
+          <div className="min-w-0 flex-1 sm:min-w-50">
             <label className="block text-sm text-slate-400 mb-2">
               From Date
             </label>
@@ -351,7 +358,7 @@ export default function AnalyticsPage() {
               className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             />
           </div>
-          <div className="flex-1 min-w-50">
+          <div className="min-w-0 flex-1 sm:min-w-50">
             <label className="block text-sm text-slate-400 mb-2">
               To Date
             </label>
@@ -370,7 +377,7 @@ export default function AnalyticsPage() {
               className="w-full bg-slate-800 text-white px-4 py-2 rounded border border-slate-700 focus:border-teal-500 focus:outline-none"
             />
           </div>
-          <div className="flex-1 min-w-50">
+          <div className="min-w-0 flex-1 sm:min-w-50">
             <label className="block text-sm text-slate-400 mb-2">
               Granularity
             </label>
@@ -391,16 +398,16 @@ export default function AnalyticsPage() {
 
       {isLoading ? (
         <div className="space-y-8" aria-busy="true">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-28 animate-pulse rounded-lg border border-slate-800 bg-slate-900/60"
+                className="h-28 animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60"
               />
             ))}
           </div>
-          <div className="h-[360px] animate-pulse rounded-lg border border-slate-800 bg-slate-900/60" />
-          <div className="h-[360px] animate-pulse rounded-lg border border-slate-800 bg-slate-900/60" />
+          <div className="h-[360px] animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60" />
+          <div className="h-[360px] animate-pulse rounded-xl border border-slate-800/60 bg-slate-900/60" />
         </div>
       ) : (
         <>
@@ -409,37 +416,45 @@ export default function AnalyticsPage() {
 
           {/* Conversion Metrics */}
           {conversionMetrics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total Referrals"
-                value={conversionMetrics.total_referrals.toString()}
-                subtitle="All time clicks"
-              />
-              <StatCard
-                title="Successful Referrals"
-                value={conversionMetrics.successful_referrals.toString()}
-                subtitle="Converted to sales"
-                accent="from-green-500/20 to-teal-500/10"
-              />
-              <StatCard
-                title="Conversion Rate"
-                value={`${conversionMetrics.conversion_rate.toFixed(1)}%`}
-                subtitle="Success rate"
-                accent="from-blue-500/20 to-cyan-500/10"
-              />
-              <StatCard
-                title="Total Earnings"
-                value={`₦${conversionMetrics.total_earnings.toLocaleString()}`}
-                subtitle="In selected period"
-              />
+            <div className="space-y-3">
+              <SectionHeader label="Overview" title="Conversion metrics" />
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                <KpiTile
+                  label="Total referrals"
+                  icon={Users}
+                  hue="sky"
+                  value={conversionMetrics.total_referrals.toLocaleString()}
+                  secondary="all time clicks"
+                />
+                <KpiTile
+                  label="Successful referrals"
+                  icon={UserPlus}
+                  hue="violet"
+                  value={conversionMetrics.successful_referrals.toLocaleString()}
+                  secondary="converted to sales"
+                />
+                <KpiTile
+                  label="Conversion rate"
+                  icon={Percent}
+                  hue="amber"
+                  value={`${conversionMetrics.conversion_rate.toFixed(1)}%`}
+                  secondary="success rate"
+                />
+                <KpiTile
+                  label="Total earnings"
+                  icon={HandCoins}
+                  hue="teal"
+                  accent
+                  value={`₦${conversionMetrics.total_earnings.toLocaleString()}`}
+                  secondary="in selected period"
+                />
+              </div>
             </div>
           )}
 
           {/* Earnings Trend Chart */}
-          <div className="bg-slate-900 p-6 rounded-lg border border-slate-800">
-            <h2 className="text-xl font-bold text-white mb-6">
-              Earnings Trend
-            </h2>
+          <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
+            <SectionHeader label="Trend" title="Earnings trend" />
             {!earningsTrend || earningsTrend.length === 0 ? (
               <EmptyState
                 icon={HandCoins}
@@ -489,8 +504,8 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Signups Trend Chart */}
-          <div className="bg-slate-900 p-6 rounded-lg border border-slate-800">
-            <h2 className="text-xl font-bold text-white mb-6">Signups</h2>
+          <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
+            <SectionHeader label="Trend" title="Signups" />
             {!signupTrend || signupTrend.length === 0 ? (
               <EmptyState
                 icon={UserPlus}
@@ -544,10 +559,8 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Product Performance Chart */}
-          <div className="bg-slate-900 p-6 rounded-lg border border-slate-800">
-            <h2 className="text-xl font-bold text-white mb-6">
-              Product Performance
-            </h2>
+          <div className="space-y-4 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4 sm:p-6">
+            <SectionHeader label="Breakdown" title="Product performance" />
             {!productPerformance || productPerformance.length === 0 ? (
               <EmptyState
                 icon={Package}

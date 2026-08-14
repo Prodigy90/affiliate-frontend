@@ -73,7 +73,7 @@ export function PublicNav({ onStartEarning }: PublicNavProps) {
           aria-label="WASBOT affiliate program — home"
         >
           <Image
-            src="/wasbot-icon.svg"
+            src="/wasbot-white.svg"
             alt=""
             width={28}
             height={28}

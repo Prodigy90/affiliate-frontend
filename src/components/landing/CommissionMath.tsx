@@ -65,7 +65,7 @@ export function CommissionMath() {
             >
               {tier.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-teal-500 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-950">
+                  <span className="whitespace-nowrap rounded-full bg-teal-500 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-950">
                     Most referrals land here
                   </span>
                 </div>

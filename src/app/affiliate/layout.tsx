@@ -7,12 +7,13 @@ type AffiliateLayoutProps = {
 };
 
 // Primary nav — five destinations, matching the mobile tab bar 1:1.
-// Products & Links and Settings live in the user menu dropdown.
+// Products is where new affiliates register for a product, so it stays in the
+// primary nav; Settings lives in the user menu dropdown.
 const navItems: NavigationItem[] = [
 	{ href: "/affiliate/dashboard", label: "Dashboard" },
 	{ href: "/affiliate/assets", label: "Promo Kit" },
-	{ href: "/affiliate/commissions", label: "Commissions" },
-	{ href: "/affiliate/payouts", label: "Payouts" },
+	{ href: "/affiliate/earnings", label: "Earnings" },
+	{ href: "/affiliate/products", label: "Products" },
 	{ href: "/affiliate/analytics", label: "Analytics" },
 ];
 
