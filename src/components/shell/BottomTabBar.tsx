@@ -71,6 +71,15 @@ function AnalyticsIcon(p: IconProps) {
 	);
 }
 
+function SettingsIcon(p: IconProps) {
+	return (
+		<svg {...svgProps(p)} aria-hidden="true">
+			<circle cx="12" cy="12" r="3" />
+			<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+		</svg>
+	);
+}
+
 interface Tab {
 	label: string;
 	href: string;
@@ -79,18 +88,18 @@ interface Tab {
 
 const TABS: Tab[] = [
 	{ label: "Home", href: "/affiliate/dashboard", Icon: HomeIcon },
-	{ label: "Promo Kit", href: "/affiliate/assets", Icon: PromoKitIcon },
-	{ label: "Earnings", href: "/affiliate/earnings", Icon: CommissionsIcon },
 	{ label: "Products", href: "/affiliate/products", Icon: ProductsIcon },
+	{ label: "Earnings", href: "/affiliate/earnings", Icon: CommissionsIcon },
+	{ label: "Promo Kit", href: "/affiliate/assets", Icon: PromoKitIcon },
 	{ label: "Analytics", href: "/affiliate/analytics", Icon: AnalyticsIcon },
+	{ label: "Settings", href: "/affiliate/settings", Icon: SettingsIcon },
 ];
 
 export function BottomTabBar() {
 	const pathname = usePathname();
 
 	// Match against most-specific href first. Routes outside the primary set
-	// (settings) simply show no active tab — same behavior as
-	// wasbot-frontend's /billing.
+	// simply show no active tab — same behavior as wasbot-frontend's /billing.
 	const sorted = [...TABS].sort((a, b) => b.href.length - a.href.length);
 	const activeHref = sorted.find(
 		(t) => pathname === t.href || pathname?.startsWith(t.href + "/")

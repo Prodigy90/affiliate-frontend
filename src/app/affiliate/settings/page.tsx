@@ -96,7 +96,7 @@ function SaveButton({ pending, disabled, children }: {
 
 export default function AffiliateSettingsPage() {
 	const queryClient = useQueryClient();
-	const { isAuthenticated, status } = useAuthSession();
+	const { isAuthenticated, status, user: sessionUser } = useAuthSession();
 
 	// Hydration gate — same trap as the analytics page: the prerendered shell
 	// bakes a resolved branch while the client's first paint is still loading.
@@ -283,6 +283,8 @@ export default function AffiliateSettingsPage() {
 		);
 	}
 
+	const avatarSrc = profile.avatar_url || sessionUser?.image || null;
+
 	return (
 		<div className="space-y-6">
 			<section className="space-y-1.5">
@@ -307,13 +309,15 @@ export default function AffiliateSettingsPage() {
 
 				<div className="relative flex flex-wrap items-center justify-between gap-4">
 					<div className="flex min-w-0 items-center gap-3.5">
-						{profile.avatar_url ? (
+						{/* No upload flow yet — fall back to the Google photo from the
+						    session before showing the placeholder icon. */}
+						{avatarSrc ? (
 							<Image
-								src={profile.avatar_url}
+								src={avatarSrc}
 								alt={profile.name}
 								width={56}
 								height={56}
-								className="h-14 w-14 rounded-full ring-2 ring-teal-500/30"
+								className="h-14 w-14 rounded-full object-cover ring-2 ring-teal-500/30"
 							/>
 						) : (
 							<span className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-slate-400 ring-2 ring-teal-500/30">
