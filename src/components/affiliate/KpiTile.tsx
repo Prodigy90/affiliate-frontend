@@ -124,7 +124,7 @@ export function KpiTile({
 				>
 					<Icon className="h-3.5 w-3.5" aria-hidden="true" />
 				</span>
-				<span className="min-w-0 truncate text-xs text-slate-400">{label}</span>
+				<span className="min-w-0 text-xs leading-tight text-slate-400">{label}</span>
 				{delta === undefined ? null : delta === null ? (
 					<span className="ml-auto rounded-md bg-slate-800/70 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
 						new
@@ -159,7 +159,9 @@ export function KpiTile({
 						{value}
 					</div>
 					{secondary && (
-						<div className="mt-0.5 truncate text-[11px] text-slate-500">{secondary}</div>
+						<div className="mt-0.5 text-[11px] leading-snug text-slate-500">
+							{secondary}
+						</div>
 					)}
 				</div>
 				{showSpark && (
