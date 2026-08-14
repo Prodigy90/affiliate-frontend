@@ -295,7 +295,7 @@ export default function AdminDashboardPage() {
 							icon={Users}
 							hue="violet"
 							value={formatInteger(allTime?.affiliates_total ?? 0)}
-							secondary={`${formatInteger(allTime?.affiliates_earning ?? 0)} earning · ${formatInteger(allTime?.signups_total ?? 0)} signups referred`}
+							secondary={`${formatInteger(allTime?.affiliates_earning ?? 0)} earning · ${formatInteger(allTime?.signups_total ?? 0)} signup${(allTime?.signups_total ?? 0) === 1 ? "" : "s"} referred`}
 							href="/admin/affiliates"
 						/>
 					</div>
