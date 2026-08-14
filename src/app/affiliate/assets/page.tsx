@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
+	ArrowRight,
 	Check,
+	ChevronDown,
 	Clock,
 	Copy,
 	Download,
+	Folder,
+	FolderOpen,
 	HardDrive,
 	MessageCircle,
 	Play,
@@ -17,8 +22,6 @@ import { toast } from "sonner";
 
 import { signIn } from "@/lib/auth-client";
 import { PageSkeleton } from "@/components/page-skeleton";
-import { ShareLinkCard } from "@/components/affiliate/ShareLinkCard";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { useAffiliate } from "@/lib/hooks/use-affiliate";
 import { getReferralLinks } from "@/lib/api/affiliate";
 import type { ReferralLinksListResponse } from "@/lib/types/affiliate";
@@ -245,33 +248,22 @@ const VIDEOS: PromoVideo[] = [
 	},
 ];
 
-type FilterKey = "all" | "winners" | Category | "new";
-
-const FILTERS: { key: FilterKey; label: string; tone: "teal" | "amber" | "violet" }[] = [
-	{ key: "all", label: "All", tone: "teal" },
-	{ key: "winners", label: "★ Winners", tone: "amber" },
-	{ key: "pitch", label: "Quick pitch", tone: "teal" },
-	{ key: "status", label: "Status", tone: "teal" },
-	{ key: "groups", label: "Groups", tone: "teal" },
-	{ key: "autoreply", label: "Auto-reply", tone: "teal" },
-	{ key: "contacts", label: "Contacts", tone: "teal" },
-	{ key: "teasers", label: "Teasers", tone: "teal" },
-	{ key: "new", label: "New", tone: "violet" },
+// Folder display order for the Videos tab.
+const CATEGORY_ORDER: Category[] = [
+	"pitch",
+	"status",
+	"groups",
+	"autoreply",
+	"contacts",
+	"teasers",
 ];
-
-function matchesFilter(video: PromoVideo, key: FilterKey): boolean {
-	if (key === "all") return true;
-	if (key === "winners") return !!video.winner;
-	if (key === "new") return !!video.isNew;
-	return video.category === key;
-}
 
 const FALLBACK_LINK = "https://wasbot.app";
 
 const buildCaptions = (link: string) => [
 	{
 		label: "Status caption",
-		hint: "Pair it with any video above.",
+		hint: "Pair it with any video from the Videos tab.",
 		text: `I no dey post status by hand again. WASBOT posts my status and group adverts for me, even when my phone is off. Free for 7 days, no card needed: ${link}`,
 	},
 	{
@@ -321,43 +313,6 @@ function CopyButton({ text, small }: { text: string; small?: boolean }) {
 					<Copy className="h-3.5 w-3.5" /> Copy
 				</>
 			)}
-		</button>
-	);
-}
-
-function FilterChip({
-	label,
-	count,
-	tone,
-	active,
-	onClick,
-}: {
-	label: string;
-	count: number;
-	tone: "teal" | "amber" | "violet";
-	active: boolean;
-	onClick: () => void;
-}) {
-	const activeToneClass =
-		tone === "amber"
-			? "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/40"
-			: tone === "violet"
-				? "bg-violet-500/10 text-violet-300 ring-1 ring-violet-500/40"
-				: "bg-teal-500/10 text-teal-300 ring-1 ring-teal-500/40";
-
-	return (
-		<button
-			type="button"
-			aria-pressed={active}
-			onClick={onClick}
-			className={cn(
-				"shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition",
-				active
-					? cn("border-transparent", activeToneClass)
-					: "border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700 hover:text-slate-200",
-			)}
-		>
-			{label} · {count}
 		</button>
 	);
 }
@@ -541,8 +496,21 @@ function PreviewModal({ video, onClose }: { video: PromoVideo; onClose: () => vo
 
 export default function PromoKitPage() {
 	const { isLoading: authLoading, isAuthenticated } = useAffiliate();
-	const [filter, setFilter] = useState<FilterKey>("all");
+	const [section, setSection] = useState<"videos" | "captions">("videos");
+	const [openFolders, setOpenFolders] = useState<Set<Category>>(new Set());
 	const [previewVideo, setPreviewVideo] = useState<PromoVideo | null>(null);
+
+	const toggleFolder = (cat: Category) => {
+		setOpenFolders((prev) => {
+			const next = new Set(prev);
+			if (next.has(cat)) {
+				next.delete(cat);
+			} else {
+				next.add(cat);
+			}
+			return next;
+		});
+	};
 
 	const { data } = useQuery<ReferralLinksListResponse, Error>({
 		queryKey: ["referral-links", { page: 1, limit: 1 }],
@@ -580,13 +548,11 @@ export default function PromoKitPage() {
 		);
 	}
 
-	const filtered = VIDEOS.filter((v) => matchesFilter(v, filter));
-	const winners = filtered.filter((v) => v.winner);
-	const nonWinners = filtered.filter((v) => !v.winner);
+	const winners = VIDEOS.filter((v) => v.winner);
 	const restWinners = winners.slice(1);
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-6">
 			<div className="space-y-2">
 				<p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
 					Promo Kit
@@ -601,121 +567,180 @@ export default function PromoKitPage() {
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-				<ShareLinkCard />
-				<div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-5">
-					<div className="flex items-center gap-2">
-						<span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-300">
-							<MessageCircle className="h-4 w-4" aria-hidden="true" />
-						</span>
-						<p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-							How to use this kit
-						</p>
-					</div>
-					<ol className="mt-3 space-y-2 text-xs leading-relaxed text-slate-400">
-						<li>1. Download a video below. On your phone, long-press or use the share icon to save it.</li>
-						<li>2. Copy a caption. Your referral link is already inside it.</li>
-						<li>3. Post to your status, groups, or story. Signups through your link are credited to you automatically.</li>
-					</ol>
-				</div>
+			{/* Product scope — the kit opens on WASBOT; more products join later. */}
+			<div className="flex flex-wrap items-center gap-3">
+				<span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 px-3 py-1.5 text-xs font-semibold text-teal-300 ring-1 ring-teal-500/40">
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src="/wasbot-white.svg" alt="" width={16} height={16} className="rounded" />
+					WASBOT
+				</span>
+				<Link
+					href="/affiliate/products"
+					className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 transition hover:text-teal-300"
+				>
+					All products <ArrowRight className="h-3 w-3" aria-hidden="true" />
+				</Link>
 			</div>
 
-			{/* Captions */}
-			<section className="space-y-3">
-				<div>
-					<h2 className="text-lg font-semibold text-slate-50">
-						Copy-paste captions
-					</h2>
+			{/* How to use this kit — compact three-step strip */}
+			<div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+				<div className="flex items-center gap-2">
+					<span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-teal-500/10 text-teal-300">
+						<MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+					</span>
+					<p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
+						How to use this kit
+					</p>
+				</div>
+				<ol className="mt-3 grid gap-2.5 text-xs leading-relaxed text-slate-400 md:grid-cols-3">
+					<li className="flex gap-2">
+						<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500/10 font-mono text-[10px] font-semibold text-teal-300">
+							1
+						</span>
+						Download a video. On your phone, long-press or use the share icon to save it.
+					</li>
+					<li className="flex gap-2">
+						<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500/10 font-mono text-[10px] font-semibold text-teal-300">
+							2
+						</span>
+						Copy a caption. Your referral link is already inside it.
+					</li>
+					<li className="flex gap-2">
+						<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500/10 font-mono text-[10px] font-semibold text-teal-300">
+							3
+						</span>
+						Post to your status, groups, or story. Signups through your link are credited automatically.
+					</li>
+				</ol>
+			</div>
+
+			{/* Section tabs — videos / captions */}
+			<div className="flex items-center gap-1.5" role="tablist" aria-label="Kit sections">
+				{(["videos", "captions"] as const).map((s) => {
+					const active = section === s;
+					const count = s === "videos" ? VIDEOS.length : captions.length;
+					return (
+						<button
+							key={s}
+							role="tab"
+							aria-selected={active}
+							onClick={() => setSection(s)}
+							className={cn(
+								"rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors",
+								active
+									? "bg-teal-500/15 text-teal-200 ring-1 ring-teal-500/40"
+									: "text-slate-400 ring-1 ring-slate-800 hover:text-slate-200",
+							)}
+						>
+							{s} · {count}
+						</button>
+					);
+				})}
+			</div>
+
+			{section === "captions" ? (
+				<section className="space-y-3">
 					<p className="text-xs text-slate-400">
 						Your referral link is already filled in. Edit the words to sound
 						like you.
 					</p>
-				</div>
-				<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-					{captions.map((caption) => (
-						<div
-							key={caption.label}
-							className="flex flex-col gap-3 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4"
-						>
-							<div>
-								<p className="text-xs font-semibold text-slate-200">
-									{caption.label}
-								</p>
-								<p className="text-[11px] text-slate-500">{caption.hint}</p>
-							</div>
-							<p className="flex-1 whitespace-pre-wrap rounded-lg border border-slate-800/60 bg-slate-950/60 p-3 text-xs leading-relaxed text-slate-300">
-								{caption.text}
-							</p>
-							<div className="flex justify-end">
-								<CopyButton text={caption.text} small />
-							</div>
-						</div>
-					))}
-				</div>
-			</section>
-
-			{/* Videos */}
-			<section className="space-y-3">
-				<div>
-					<h2 className="text-lg font-semibold text-slate-50">Videos</h2>
-					<p className="text-xs text-slate-400">
-						Winners are pinned first — everything else is one tap away.
-					</p>
-				</div>
-
-				<div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-					{FILTERS.map((f) => (
-						<FilterChip
-							key={f.key}
-							label={f.label}
-							count={VIDEOS.filter((v) => matchesFilter(v, f.key)).length}
-							tone={f.tone}
-							active={filter === f.key}
-							onClick={() => setFilter(f.key)}
-						/>
-					))}
-				</div>
-
-				{winners.length === 0 && nonWinners.length === 0 ? (
-					<EmptyState
-						icon={Play}
-						accent="teal"
-						title="Nothing in this filter"
-						body="Try a different category — every video lives under All."
-					/>
-				) : (
-					<>
-						{winners.length > 0 && (
-							<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-								{winners.map((v, i) => (
-									<div key={v.file} className={i === 0 ? "" : "hidden sm:block"}>
-										<WinnerCard video={v} onPreview={setPreviewVideo} />
-									</div>
-								))}
-							</div>
-						)}
-
-						{(restWinners.length > 0 || nonWinners.length > 0) && (
+					<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+						{captions.map((caption) => (
 							<div
-								className={cn(
-									"divide-y divide-slate-800/50 rounded-xl border border-slate-800/70 bg-slate-900/60",
-									// Winners 2-3 render here as mobile-only rows; when they
-									// are the ONLY children, the card would be an empty strip
-									// on desktop — hide it there.
-									nonWinners.length === 0 && "sm:hidden",
-								)}
+								key={caption.label}
+								className="flex flex-col gap-3 rounded-xl border border-slate-800/70 bg-slate-900/60 p-4"
 							>
-								{restWinners.map((v) => (
-									<VideoRow key={v.file} video={v} mobileOnly onPreview={setPreviewVideo} />
-								))}
-								{nonWinners.map((v) => (
-									<VideoRow key={v.file} video={v} onPreview={setPreviewVideo} />
-								))}
+								<div>
+									<p className="text-xs font-semibold text-slate-200">
+										{caption.label}
+									</p>
+									<p className="text-[11px] text-slate-500">{caption.hint}</p>
+								</div>
+								<p className="flex-1 whitespace-pre-wrap rounded-lg border border-slate-800/60 bg-slate-950/60 p-3 text-xs leading-relaxed text-slate-300">
+									{caption.text}
+								</p>
+								<div className="flex justify-end">
+									<CopyButton text={caption.text} small />
+								</div>
 							</div>
-						)}
-					</>
-				)}
-			</section>
+						))}
+					</div>
+				</section>
+			) : (
+				<section className="space-y-3">
+					<p className="text-xs text-slate-400">
+						Winners are pinned first — the rest is filed by category below.
+					</p>
+
+					{/* Pinned winners */}
+					<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+						{winners.map((v, i) => (
+							<div key={v.file} className={i === 0 ? "" : "hidden sm:block"}>
+								<WinnerCard video={v} onPreview={setPreviewVideo} />
+							</div>
+						))}
+					</div>
+					{restWinners.length > 0 && (
+						<div className="divide-y divide-slate-800/50 rounded-xl border border-slate-800/70 bg-slate-900/60 sm:hidden">
+							{restWinners.map((v) => (
+								<VideoRow key={v.file} video={v} mobileOnly onPreview={setPreviewVideo} />
+							))}
+						</div>
+					)}
+
+					{/* Category folders */}
+					<div className="divide-y divide-slate-800/50 rounded-xl border border-slate-800/70 bg-slate-900/60">
+						{CATEGORY_ORDER.map((cat) => {
+							const vids = VIDEOS.filter((v) => v.category === cat);
+							const open = openFolders.has(cat);
+							const hasNew = vids.some((v) => v.isNew);
+							const FolderIcon = open ? FolderOpen : Folder;
+							return (
+								<div key={cat}>
+									<button
+										type="button"
+										aria-expanded={open}
+										onClick={() => toggleFolder(cat)}
+										className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-900/80"
+									>
+										<span className="flex min-w-0 items-center gap-2.5">
+											<FolderIcon
+												className={cn("h-4 w-4 shrink-0", open ? "text-teal-300" : "text-slate-500")}
+												aria-hidden="true"
+											/>
+											<span className="truncate text-sm font-medium text-slate-100">
+												{CATEGORY_LABEL[cat]}
+											</span>
+											<span className="font-mono text-[11px] text-slate-500">
+												{vids.length}
+											</span>
+											{hasNew && (
+												<span className="shrink-0 rounded-full bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-violet-300 ring-1 ring-violet-500/30">
+													New
+												</span>
+											)}
+										</span>
+										<ChevronDown
+											className={cn(
+												"h-4 w-4 shrink-0 text-slate-500 transition-transform",
+												open && "rotate-180",
+											)}
+											aria-hidden="true"
+										/>
+									</button>
+									{open && (
+										<div className="divide-y divide-slate-800/50 border-t border-slate-800/50 bg-slate-950/30">
+											{vids.map((v) => (
+												<VideoRow key={v.file} video={v} onPreview={setPreviewVideo} />
+											))}
+										</div>
+									)}
+								</div>
+							);
+						})}
+					</div>
+				</section>
+			)}
 
 			{previewVideo && (
 				<PreviewModal video={previewVideo} onClose={() => setPreviewVideo(null)} />
