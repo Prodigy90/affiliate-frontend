@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 const VIDEO_BASE = "https://wasbot.app/videos/promo-kit";
 
-type Category = "pitch" | "status" | "sequences";
+type Category = "pitch" | "status" | "groups" | "contacts" | "sequences";
 
 type PromoVideo = {
 	file: string;
@@ -46,6 +46,8 @@ type PromoVideo = {
 const CATEGORY_LABEL: Record<Category, string> = {
 	pitch: "Quick pitch",
 	status: "Status",
+	groups: "Groups",
+	contacts: "Contacts",
 	sequences: "Sequences",
 };
 
@@ -69,6 +71,60 @@ const VIDEOS: PromoVideo[] = [
 		category: "status",
 		winner: true,
 		winnerReason: "Held attention longest of anything we've tested.",
+	},
+	{
+		file: "groups-hook-a",
+		title: "Group posting on autopilot (hook A)",
+		bestFor: "The 8PM class grind opening. Founder-voiced.",
+		duration: "1:21",
+		size: "9.6MB",
+		category: "groups",
+		isNew: true,
+	},
+	{
+		file: "groups-hook-b",
+		title: "Group posting on autopilot (hook B)",
+		bestFor: "The goldmine-groups opening. Founder-voiced.",
+		duration: "1:19",
+		size: "9.3MB",
+		category: "groups",
+		isNew: true,
+	},
+	{
+		file: "groups-hook-c",
+		title: "Group posting on autopilot (hook C)",
+		bestFor: "The do-the-math opening. Founder-voiced.",
+		duration: "1:24",
+		size: "10.3MB",
+		category: "groups",
+		isNew: true,
+	},
+	{
+		file: "contacts-hook-a",
+		title: "Contacts & audience building (hook A)",
+		bestFor: "The invisible-customers opening for anyone running ads.",
+		duration: "1:23",
+		size: "8.9MB",
+		category: "contacts",
+		isNew: true,
+	},
+	{
+		file: "contacts-hook-b",
+		title: "Contacts & audience building (hook B)",
+		bestFor: "The glorified contact-saver opening.",
+		duration: "1:19",
+		size: "8.4MB",
+		category: "contacts",
+		isNew: true,
+	},
+	{
+		file: "contacts-hook-c",
+		title: "Contacts & audience building (hook C)",
+		bestFor: "The status-gap opening. Where did the viewers go?",
+		duration: "1:22",
+		size: "9.0MB",
+		category: "contacts",
+		isNew: true,
 	},
 	{
 		file: "sequences-hook-a",
@@ -100,7 +156,7 @@ const VIDEOS: PromoVideo[] = [
 ];
 
 // Folder display order for the Videos tab.
-const CATEGORY_ORDER: Category[] = ["pitch", "status", "sequences"];
+const CATEGORY_ORDER: Category[] = ["pitch", "status", "groups", "contacts", "sequences"];
 
 const FALLBACK_LINK = "https://wasbot.app";
 
