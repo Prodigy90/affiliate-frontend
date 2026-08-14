@@ -137,6 +137,7 @@ export default function AffiliateEarningsPage() {
 		register,
 		handleSubmit,
 		reset,
+		setValue,
 		formState: { errors, isSubmitting },
 	} = useForm<PayoutFormInput, unknown, PayoutFormValues>({
 		resolver: zodResolver(payoutSchema),
@@ -225,13 +226,17 @@ export default function AffiliateEarningsPage() {
 			</section>
 
 			{/* Balance strip — available funds + inline withdraw */}
-			<section className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
-				<div className="flex flex-wrap items-end justify-between gap-4">
+			<section className="relative overflow-hidden rounded-2xl border border-teal-500/30 bg-slate-900/60 p-5">
+				<div
+					className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-teal-500/10 blur-3xl"
+					aria-hidden="true"
+				/>
+				<div className="relative flex flex-wrap items-end justify-between gap-4">
 					<div className="min-w-0">
 						<p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
 							Available to withdraw
 						</p>
-						<p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-teal-300">
+						<p className="mt-1 font-mono text-3xl font-semibold tabular-nums text-teal-300 sm:text-4xl">
 							{earningsLoading ? "—" : formatNaira(availableKobo, currency)}
 						</p>
 					</div>
@@ -243,52 +248,74 @@ export default function AffiliateEarningsPage() {
 							<label className="sr-only" htmlFor="payout-amount">
 								Payout amount in naira
 							</label>
-							<input
-								id="payout-amount"
-								type="number"
-								step="1"
-								min={MIN_PAYOUT_NGN}
-								placeholder={`Min ₦${MIN_PAYOUT_NGN.toLocaleString()}`}
-								className="h-9 w-36 rounded-md border border-slate-700 bg-slate-950/60 px-3 text-sm text-slate-50 outline-none ring-0 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-								{...register("amount", { valueAsNumber: true })}
-							/>
+							<div className="flex items-center gap-1 rounded-xl border border-slate-700/80 bg-slate-950/70 p-1 transition-colors focus-within:border-teal-500/60 focus-within:ring-1 focus-within:ring-teal-500/40">
+								<span className="pl-2.5 text-sm text-slate-500">₦</span>
+								<input
+									id="payout-amount"
+									type="number"
+									step="1"
+									min={MIN_PAYOUT_NGN}
+									placeholder={`Min ${MIN_PAYOUT_NGN.toLocaleString()}`}
+									className="h-9 w-28 bg-transparent text-sm text-slate-50 outline-none placeholder:text-slate-600 [appearance:textfield] sm:w-32 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+									{...register("amount", { valueAsNumber: true })}
+								/>
+								{availableNaira >= MIN_PAYOUT_NGN && (
+									<button
+										type="button"
+										onClick={() =>
+											setValue("amount", Math.floor(availableNaira), {
+												shouldValidate: true,
+											})
+										}
+										className="rounded-lg px-2 py-1 text-[11px] font-semibold text-teal-300/90 transition-colors hover:bg-teal-500/10"
+									>
+										Max
+									</button>
+								)}
+								<button
+									type="submit"
+									disabled={isSubmitting || availableNaira < MIN_PAYOUT_NGN}
+									className="h-9 rounded-lg bg-teal-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+								>
+									{isSubmitting ? "Requesting..." : "Withdraw"}
+								</button>
+							</div>
 							{errors.amount && (
 								<p className="pt-1 text-[11px] text-red-400">
 									{errors.amount.message}
 								</p>
 							)}
 						</div>
-						<button
-							type="submit"
-							disabled={isSubmitting || availableNaira < MIN_PAYOUT_NGN}
-							className="inline-flex h-9 items-center justify-center rounded-full bg-teal-500 px-4 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-teal-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
-						>
-							{isSubmitting ? "Requesting..." : "Withdraw"}
-						</button>
 					</form>
 				</div>
-				<div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-800/50 pt-3 text-[11px] text-slate-500">
-					<p>
-						Pending{" "}
-						<b className="font-mono font-semibold tabular-nums text-slate-300">
+				<div className="relative mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-800/50 pt-3">
+					<div>
+						<p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">
+							Pending
+						</p>
+						<p className="font-mono text-sm tabular-nums text-slate-200">
 							{formatNaira(earnings?.pending_balance ?? 0, currency)}
-						</b>
-					</p>
-					<p>
-						Earned to date{" "}
-						<b className="font-mono font-semibold tabular-nums text-slate-300">
+						</p>
+					</div>
+					<div>
+						<p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">
+							Earned to date
+						</p>
+						<p className="font-mono text-sm tabular-nums text-slate-200">
 							{formatNaira(earnings?.total_earnings ?? 0, currency)}
-						</b>
-					</p>
-					<p>
-						Paid out{" "}
-						<b className="font-mono font-semibold tabular-nums text-slate-300">
+						</p>
+					</div>
+					<div>
+						<p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">
+							Paid out
+						</p>
+						<p className="font-mono text-sm tabular-nums text-slate-200">
 							{formatNaira(earnings?.paid_balance ?? 0, currency)}
-						</b>
-					</p>
+						</p>
+					</div>
 				</div>
 				{availableNaira < MIN_PAYOUT_NGN && !earningsLoading && (
-					<p className="pt-2 text-[11px] text-slate-400">
+					<p className="relative pt-2 text-[11px] text-slate-400">
 						{availableNaira <= 0
 							? "You currently have no available balance for payout."
 							: `Minimum payout is ₦${MIN_PAYOUT_NGN.toLocaleString()}. Your available balance is below this.`}
@@ -299,22 +326,37 @@ export default function AffiliateEarningsPage() {
 			{/* History — commissions / payouts */}
 			<section className="space-y-3">
 				<div className="flex items-center justify-between gap-3">
-					<div className="flex items-center gap-1.5" role="tablist" aria-label="History">
+					<div
+						className="flex w-fit rounded-lg border border-slate-800/70 bg-slate-950/60 p-0.5"
+						role="tablist"
+						aria-label="History"
+					>
 						{(["commissions", "payouts"] as const).map((t) => {
 							const active = tab === t;
+							const count =
+								t === "commissions"
+									? commissionPagination?.total
+									: payouts
+										? allPayouts.length
+										: undefined;
 							return (
 								<button
 									key={t}
 									role="tab"
 									aria-selected={active}
 									onClick={() => setTab(t)}
-									className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition-colors ${
+									className={`rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors ${
 										active
-											? "bg-teal-500/15 text-teal-200 ring-1 ring-teal-500/40"
-											: "text-slate-400 ring-1 ring-slate-800 hover:text-slate-200"
+											? "bg-teal-500/15 text-teal-300"
+											: "text-slate-400 hover:text-slate-200"
 									}`}
 								>
 									{t}
+									{count !== undefined && (
+										<span className="ml-1.5 tabular-nums opacity-60">
+											{count}
+										</span>
+									)}
 								</button>
 							);
 						})}
