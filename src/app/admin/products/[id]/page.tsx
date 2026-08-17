@@ -16,6 +16,7 @@ import type { ProductDetail } from "@/lib/types/product";
 import type { PageProps } from "@/lib/types/session";
 import { useAuthSession } from "@/components/auth-guard";
 import { RetryButton } from "@/components/retry-button";
+import { formatNaira } from "@/lib/utils/format";
 
 const productSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -124,10 +125,16 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 		register: registerCommission,
 		handleSubmit: handleSubmitCommission,
 		reset: resetCommission,
+		watch: watchCommission,
 		formState: { errors: commissionErrors, isSubmitting: isSubmittingCommission },
 	} = useForm<CommissionFormInput, unknown, CommissionFormValues>({
 		resolver: zodResolver(commissionSchema),
 	});
+
+	// Kobo in, naira shown. The field stores the smallest currency unit, which
+	// is exactly the ambiguity that let prod sit on 5000 (₦50) while everyone
+	// read it as ₦5,000.
+	const watchMinPayout = Number(watchCommission("min_payout_amount"));
 
 	// Reset product form when product data loads
 	useEffect(() => {
@@ -520,16 +527,24 @@ export default function AdminProductDetailPage({ params }: PageProps) {
 							</div>
 							<div>
 								<label htmlFor="min_payout_amount" className="mb-1.5 block text-sm font-medium text-slate-300">
-									Min payout amount
+									Min payout amount <span className="text-slate-500">(kobo)</span>
 								</label>
 								<input
 									id="min_payout_amount"
 									type="number"
-									step="0.01"
+									step="1"
 									min={0}
 									className={`${FIELD_CLASS} font-mono tabular-nums`}
 									{...registerCommission("min_payout_amount", { valueAsNumber: true })}
 								/>
+								<p className="mt-1 text-xs text-slate-500">
+									{Number.isFinite(watchMinPayout) && watchMinPayout > 0
+										? `= ${formatNaira(watchMinPayout)}`
+										: "Smallest currency unit, so 500000 = ₦5,000."}{" "}
+									Reference only. Payout requests are affiliate-wide, not
+									per-product, so the enforced floor is the service&apos;s
+									MIN_PAYOUT_AMOUNT setting.
+								</p>
 								{commissionErrors.min_payout_amount && (
 									<p className="mt-1 text-xs text-red-400">
 										{commissionErrors.min_payout_amount.message}
