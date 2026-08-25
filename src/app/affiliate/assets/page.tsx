@@ -160,6 +160,52 @@ const CATEGORY_ORDER: Category[] = ["status", "groups", "contacts", "sequences"]
 
 const FALLBACK_LINK = "https://wasbot.app";
 
+const SITE_BASE = "https://www.wasbot.app";
+
+type EntryPoint = {
+	key: "main" | "start";
+	title: string;
+	badge: string;
+	description: string;
+	path: string;
+};
+
+// Two doors into WASBOT. Both carry the same ref code — attribution is
+// identical, only the funnel differs.
+const ENTRY_POINTS: EntryPoint[] = [
+	{
+		key: "main",
+		title: "Main site",
+		badge: "Free trial",
+		description:
+			"The full WASBOT site. People sign up and get a 7-day free trial, no card needed. Best for cold audiences who are hearing about WASBOT for the first time.",
+		path: "/",
+	},
+	{
+		key: "start",
+		title: "Sales page",
+		badge: "Straight to paid",
+		description:
+			"A direct sales page with no free trial — it sells the subscription on the spot. Best for warm audiences who already trust you and are ready to buy.",
+		path: "/start",
+	},
+];
+
+// Pull the ref code out of the stored referral link so both entry-point
+// links can carry it. Returns null when the link has no ref (fallback state).
+function extractRefCode(link: string): string | null {
+	try {
+		return new URL(link).searchParams.get("ref");
+	} catch {
+		return null;
+	}
+}
+
+function buildEntryUrl(path: string, refCode: string | null): string {
+	const base = path === "/" ? SITE_BASE : `${SITE_BASE}${path}`;
+	return refCode ? `${base}?ref=${refCode}` : base;
+}
+
 const buildCaptions = (link: string) => [
 	{
 		label: "Status caption",
@@ -421,7 +467,8 @@ export default function PromoKitPage() {
 	});
 
 	const referralLink = data?.links?.[0]?.link_url ?? FALLBACK_LINK;
-	const captions = buildCaptions(referralLink);
+	const refCode = extractRefCode(referralLink);
+	const captions = buildCaptions(buildEntryUrl("/", refCode));
 
 	if (authLoading) {
 		return <PageSkeleton />;
@@ -480,6 +527,53 @@ export default function PromoKitPage() {
 				>
 					All products <ArrowRight className="h-3 w-3" aria-hidden="true" />
 				</Link>
+			</div>
+
+			{/* Two entry points — same ref code, different funnel */}
+			<div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
+				<p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
+					Your links — two ways in
+				</p>
+				<p className="mt-1 text-xs text-slate-400">
+					Both links credit you the same way. Pick the one that fits the
+					audience you&apos;re posting to.
+				</p>
+				<div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+					{ENTRY_POINTS.map((entry) => {
+						const url = buildEntryUrl(entry.path, refCode);
+						return (
+							<div
+								key={entry.key}
+								className="flex flex-col gap-2.5 rounded-lg border border-slate-800/60 bg-slate-950/50 p-3.5"
+							>
+								<div className="flex items-center gap-2">
+									<p className="text-sm font-semibold text-slate-100">
+										{entry.title}
+									</p>
+									<span
+										className={cn(
+											"rounded-full px-2 py-0.5 text-[10px] font-semibold",
+											entry.key === "main"
+												? "bg-teal-500/10 text-teal-300 ring-1 ring-teal-500/30"
+												: "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30",
+										)}
+									>
+										{entry.badge}
+									</span>
+								</div>
+								<p className="flex-1 text-xs leading-relaxed text-slate-400">
+									{entry.description}
+								</p>
+								<div className="flex items-center justify-between gap-2">
+									<code className="min-w-0 flex-1 truncate rounded-lg border border-slate-800/60 bg-slate-950/60 px-2.5 py-2 font-mono text-[11px] text-teal-200">
+										{url}
+									</code>
+									<CopyButton text={url} small />
+								</div>
+							</div>
+						);
+					})}
+				</div>
 			</div>
 
 			{/* How to use this kit — compact three-step strip */}
