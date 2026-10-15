@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 import { AUTH_COOKIE_PREFIX } from "./auth-constants";
+import { syncAffiliateToBackend } from "./server/affiliate-sync";
 
 // Validate required environment variables at startup
 if (!process.env.BETTER_AUTH_SECRET) {
@@ -98,42 +99,14 @@ export const auth = betterAuth({
       create: {
         // Use 'after' hook but sync is idempotent - if it fails, proxy will handle it
         after: async (user) => {
-          // Sync new user to Go backend after creation
-          const baseUrl = process.env.BETTER_AUTH_URL;
-          if (!baseUrl) {
-            console.error("[Auth] BETTER_AUTH_URL not configured, skipping user sync");
-            return;
-          }
-
           try {
-            const response = await fetch(`${baseUrl}/api/auth/sync-user`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                user_id: user.id,
-                email: user.email,
-                name: user.name
-              })
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error(
-                "[Auth] Failed to sync user to backend:",
-                errorText
-              );
-              // Don't throw - proxy will create affiliate on first request if needed
-            } else {
-              const data = await response.json();
-              console.log(
-                "[Auth] User synced to backend:",
-                user.id,
-                data?.data?.id
-              );
+            const result = await syncAffiliateToBackend(user);
+            if (!result.ok) {
+              console.error("[Auth] Failed to sync user to backend, status:", result.status);
             }
           } catch (error) {
-            console.error("[Auth] Error syncing user to backend:", error);
-            // Don't throw - proxy will handle affiliate creation
+            const errorCode = error instanceof Error ? error.name : "unknown";
+            console.error("[Auth] Error syncing user to backend:", errorCode);
           }
         }
       }
