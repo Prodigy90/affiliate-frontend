@@ -163,14 +163,14 @@ const FALLBACK_LINK = "https://wasbot.app";
 const SITE_BASE = "https://www.wasbot.app";
 
 type EntryPoint = {
-	key: "main" | "start";
+	key: "main" | "start" | "video";
 	title: string;
 	badge: string;
 	description: string;
 	path: string;
 };
 
-// Two doors into WASBOT. Both carry the same ref code — attribution is
+// Three doors into WASBOT. All carry the same ref code — attribution is
 // identical, only the funnel differs.
 const ENTRY_POINTS: EntryPoint[] = [
 	{
@@ -188,6 +188,14 @@ const ENTRY_POINTS: EntryPoint[] = [
 		description:
 			"A direct sales page with no free trial — it sells the subscription on the spot. Best for warm audiences who already trust you and are ready to buy.",
 		path: "/start",
+	},
+	{
+		key: "video",
+		title: "Free video",
+		badge: "Explains it for you",
+		description:
+			"A free 16-minute video that shows everything WASBOT does, with the plans right under it. People give their email to watch. Best for anyone who needs WASBOT explained before they buy.",
+		path: "/walkthrough",
 	},
 ];
 
@@ -532,13 +540,13 @@ export default function PromoKitPage() {
 			{/* Two entry points — same ref code, different funnel */}
 			<div className="rounded-xl border border-slate-800/70 bg-slate-900/60 p-4">
 				<p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
-					Your links — two ways in
+					Your links — three ways in
 				</p>
 				<p className="mt-1 text-xs text-slate-400">
-					Both links credit you the same way. Pick the one that fits the
+					All three credit you the same way. Pick the one that fits the
 					audience you&apos;re posting to.
 				</p>
-				<div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+				<div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
 					{ENTRY_POINTS.map((entry) => {
 						const url = buildEntryUrl(entry.path, refCode);
 						return (
@@ -555,7 +563,9 @@ export default function PromoKitPage() {
 											"rounded-full px-2 py-0.5 text-[10px] font-semibold",
 											entry.key === "main"
 												? "bg-teal-500/10 text-teal-300 ring-1 ring-teal-500/30"
-												: "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30",
+												: entry.key === "video"
+													? "bg-sky-500/10 text-sky-300 ring-1 ring-sky-500/30"
+													: "bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30",
 										)}
 									>
 										{entry.badge}
